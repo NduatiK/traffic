@@ -39,40 +39,53 @@ defmodule Traffic.Network.Road do
     }
   end
 
-  def step(%Road{} = road) do
-    road
-    |> update_lanes(:lanes_to_left)
-    |> update_lanes(:lanes_to_right)
+  def step(%{road: %Road{} = road}) do
+    step(road)
   end
 
-  def update_lanes(road, lane_name) do
-    lanes =
+  def step(%Road{} = road) do
+    %{road: road, exited_to_left: [], exited_to_right: []}
+    |> update_lanes(:lanes_to_left, false)
+    |> update_lanes(:lanes_to_right, false)
+  end
+
+  def to_exit(:lanes_to_left), do: :exited_to_left
+  def to_exit(:lanes_to_right), do: :exited_to_right
+
+  def update_lanes(%{road: road} = data, lane_name, can_exit) do
+    {lanes, exits} =
       road
       |> Map.get(lane_name)
       |> Enum.map(fn lane ->
         lane
         |> Enum.reverse()
-        |> Enum.flat_map_reduce(nil, fn
-          vehicle, vehicle_acc ->
-            res = move_forward(vehicle, vehicle_acc, road)
+        |> Enum.flat_map_reduce({nil, []}, fn
+          vehicle, {vehicle_acc, exited} ->
+            case move_forward(vehicle, vehicle_acc, road, can_exit) do
+              {[], leader_position} ->
+                {[], {vehicle_acc, [{elem(vehicle, 0), leader_position} | exited]}}
 
-            # case res do
-            #   {[], at} -> {[], at}
-            #   {[{veh, loc}], at} -> {{veh.marker, loc}, at}
-            # end
-            # |> IO.inspect()
-
-            res
+              {vehicle, leader_position} ->
+                {vehicle, {leader_position, exited}}
+            end
         end)
-        |> elem(0)
-        |> Enum.reverse()
+        |> then(fn {vehicles, {_, exited}} ->
+          {Enum.reverse(vehicles), exited}
+        end)
       end)
+      |> Enum.unzip()
 
-    Map.put(road, lane_name, lanes)
+    %{data | road: Map.put(road, lane_name, lanes)}
+    |> Map.put(to_exit(lane_name), exits)
   end
 
-  def move_forward({vehicle, location}, nil, road) do
+  def move_forward({vehicle, location}, nil, road, can_exit) do
     next_location = location + vehicle.speed
+
+    next_location =
+      if can_exit,
+        do: next_location,
+        else: min(road.length - vehicle_length(), next_location)
 
     if next_location < road.length do
       {[{vehicle, next_location}], next_location}
@@ -81,8 +94,13 @@ defmodule Traffic.Network.Road do
     end
   end
 
-  def move_forward({vehicle, location}, leader_pos, road) do
+  def move_forward({vehicle, location}, leader_pos, road, can_exit) do
     next_location = min(leader_pos - vehicle_length(), location + vehicle.speed)
+
+    next_location =
+      if can_exit,
+        do: next_location,
+        else: min(road.length - vehicle_length(), next_location)
 
     if next_location < road.length do
       {[{vehicle, next_location}], next_location}
@@ -97,7 +115,8 @@ defimpl Inspect, for: Traffic.Network.Road do
   @vehicle_width Traffic.Network.Road.vehicle_length()
 
   def inspect(road, _opts) do
-    String.duplicate("Ξ", road.length * @scale) <>
+    "\n" <>
+      String.duplicate("Ξ", road.length * @scale) <>
       inspect_lanes(road.lanes_to_left, :down, road.length) <>
       String.duplicate("=", road.length * @scale) <>
       inspect_lanes(road.lanes_to_right, :up, road.length) <>
@@ -125,9 +144,10 @@ defimpl Inspect, for: Traffic.Network.Road do
 
   def do_inspect_vehicles(direction, vehicles) do
     vehicles
-    |> Enum.reduce({"\n", -@vehicle_width}, fn {vehicle, location}, {acc_str, prev_position} ->
-      marker = vehicle.marker
-      # marker = vehicle_art(direction)
+    |> Enum.reduce({"\n", -@vehicle_width}, fn {_vehicle, location}, {acc_str, prev_position} ->
+      # marker = vehicle.marker
+      # marker = "◈"
+      marker = vehicle_art(direction)
 
       {
         acc_str <>
@@ -135,7 +155,7 @@ defimpl Inspect, for: Traffic.Network.Road do
             " ",
             round(max(0, (location - prev_position - @vehicle_width) * @scale))
           ) <>
-          String.duplicate("◈", round(@vehicle_width * @scale)),
+          String.duplicate(marker, round(@vehicle_width * @scale)),
         # marker,
         location
       }
@@ -144,10 +164,10 @@ defimpl Inspect, for: Traffic.Network.Road do
   end
 
   def vehicle_art(:down) do
-    "◄"
+    "◂"
   end
 
   def vehicle_art(:up) do
-    "►"
+    "▸"
   end
 end

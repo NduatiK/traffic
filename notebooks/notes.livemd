@@ -1,4 +1,4 @@
-# Untitled notebook
+# Traffic
 
 ## Road
 
@@ -26,15 +26,27 @@ alias Traffic.Vehicles.Vehicle
 
 ```elixir
 road = Road.preloaded()
+# road = Road.step(road)
 ```
 
 ```elixir
+import IEx.Helpers
+
+h(clear)
+```
+
+```elixir
+import IEx.Helpers
+
 0..10
 |> Enum.reduce(road, fn _, road ->
   road = Road.step(road)
-  :timer.sleep(2000)
+  clear()
+  :timer.sleep(1000)
   IO.inspect(road)
   IO.inspect("\n")
+  clear()
+
   road
 end)
 ```

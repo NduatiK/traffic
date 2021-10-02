@@ -47,17 +47,31 @@ defmodule Traffic.Network.Road do
     lanes =
       road
       |> Map.get(lane_name)
-      |> Enum.map(
-        &Enum.flat_map(&1, fn
-          {vehicle, location} when location + vehicle.speed < road.length - 1 ->
-            [{vehicle, location + vehicle.speed}]
-
-          {_pid, _} ->
-            []
+      |> Enum.map(fn lane ->
+        lane
+        |> Enum.reverse()
+        |> Enum.flat_map_reduce(nil, fn
+          vehicle, vehicle_acc ->
+            move_forward(vehicle, vehicle_acc, road)
         end)
-      )
+        |> elem(0)
+        |> Enum.reverse()
+      end)
 
     Map.put(road, lane_name, lanes)
+  end
+
+  def move_forward({vehicle, location}, nil, road) do
+    if location + vehicle.speed < road.length do
+      {[{vehicle, location + vehicle.speed}], location + vehicle.speed}
+    else
+      {[], nil}
+    end
+  end
+
+  def move_forward({vehicle, location}, leader_pos, _) do
+    next_location = min(leader_pos - 1, location + vehicle.speed)
+    {[{vehicle, next_location}], next_location}
   end
 end
 

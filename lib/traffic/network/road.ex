@@ -2,12 +2,14 @@ defmodule Traffic.Network.Road do
   use TypedStruct
   alias __MODULE__
   alias Traffic.Vehicles.Vehicle
+  def scale, do: 10
+  def vehicle_length, do: 0.2
 
   typedstruct do
     # Location awareness
     field :length, integer(), enforce: true
-    field :lanes_to_right, list(list({pid(), integer()})), default: []
-    field :lanes_to_left, list({pid(), integer()}), default: []
+    field :lanes_to_right, list(list({pid(), float()})), default: []
+    field :lanes_to_left, list({pid(), float()}), default: []
   end
 
   def preloaded() do
@@ -18,7 +20,7 @@ defmodule Traffic.Network.Road do
       ],
       lanes_to_left: [
         [
-          {Vehicle.random(), 0},
+          {Vehicle.random(), 0.5},
           {Vehicle.random(), 1},
           {Vehicle.random(), 2},
           {Vehicle.random(), 4},
@@ -52,7 +54,15 @@ defmodule Traffic.Network.Road do
         |> Enum.reverse()
         |> Enum.flat_map_reduce(nil, fn
           vehicle, vehicle_acc ->
-            move_forward(vehicle, vehicle_acc, road)
+            res = move_forward(vehicle, vehicle_acc, road)
+
+            # case res do
+            #   {[], at} -> {[], at}
+            #   {[{veh, loc}], at} -> {{veh.marker, loc}, at}
+            # end
+            # |> IO.inspect()
+
+            res
         end)
         |> elem(0)
         |> Enum.reverse()
@@ -62,31 +72,41 @@ defmodule Traffic.Network.Road do
   end
 
   def move_forward({vehicle, location}, nil, road) do
-    if location + vehicle.speed < road.length do
-      {[{vehicle, location + vehicle.speed}], location + vehicle.speed}
+    next_location = location + vehicle.speed
+
+    if next_location < road.length do
+      {[{vehicle, next_location}], next_location}
     else
-      {[], nil}
+      {[], next_location}
     end
   end
 
-  def move_forward({vehicle, location}, leader_pos, _) do
-    next_location = min(leader_pos - 1, location + vehicle.speed)
-    {[{vehicle, next_location}], next_location}
+  def move_forward({vehicle, location}, leader_pos, road) do
+    next_location = min(leader_pos - vehicle_length(), location + vehicle.speed)
+
+    if next_location < road.length do
+      {[{vehicle, next_location}], next_location}
+    else
+      {[], next_location}
+    end
   end
 end
 
 defimpl Inspect, for: Traffic.Network.Road do
+  @scale Traffic.Network.Road.scale()
+  @vehicle_width Traffic.Network.Road.vehicle_length()
+
   def inspect(road, _opts) do
-    String.duplicate("=", road.length) <>
+    String.duplicate("Ξ", road.length * @scale) <>
       inspect_lanes(road.lanes_to_left, :down, road.length) <>
-      String.duplicate("=", road.length) <>
+      String.duplicate("=", road.length * @scale) <>
       inspect_lanes(road.lanes_to_right, :up, road.length) <>
-      String.duplicate("=", road.length)
+      String.duplicate("Ξ", road.length * @scale)
   end
 
   def inspect_lanes(lanes, direction, length) do
     Enum.map(lanes, &inspect_vehicles(direction, &1, length))
-    |> Enum.intersperse("\n" <> String.duplicate("·", length))
+    |> Enum.intersperse("\n" <> String.duplicate("·", length * @scale))
     |> Enum.join()
     |> Kernel.<>("\n")
   end
@@ -95,7 +115,7 @@ defimpl Inspect, for: Traffic.Network.Road do
     do_inspect_vehicles(direction, vehicles)
     |> String.trim_leading("\n")
     |> String.reverse()
-    |> String.pad_leading(length)
+    |> String.pad_leading(length * @scale)
     |> then(&("\n" <> &1))
   end
 
@@ -105,11 +125,18 @@ defimpl Inspect, for: Traffic.Network.Road do
 
   def do_inspect_vehicles(direction, vehicles) do
     vehicles
-    |> Enum.reduce({"\n", -1}, fn {vehicle, location}, {acc_str, position} ->
+    |> Enum.reduce({"\n", -@vehicle_width}, fn {vehicle, location}, {acc_str, prev_position} ->
+      marker = vehicle.marker
+      # marker = vehicle_art(direction)
+
       {
         acc_str <>
-          String.duplicate(" ", max(0, location - position - 1)) <> vehicle.marker,
-        #  String.duplicate(" ", max(0, location - position - 1)) <> vehicle_art(direction),
+          String.duplicate(
+            " ",
+            round(max(0, (location - prev_position - @vehicle_width) * @scale))
+          ) <>
+          String.duplicate("◈", round(@vehicle_width * @scale)),
+        # marker,
         location
       }
     end)

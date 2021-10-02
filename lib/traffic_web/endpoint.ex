@@ -1,4 +1,4 @@
-defmodule TrafficWeb.Endpoint do
+  defmodule TrafficWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :traffic
 
   # The session will be stored in the cookie and signed,

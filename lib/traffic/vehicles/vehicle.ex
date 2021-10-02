@@ -21,13 +21,13 @@ defmodule Traffic.Vehicles.Vehicle do
   end
 
   def random() do
-    speed = :rand.uniform(3)
+    speed = round(10 * :rand.uniform_real() * 2) / 10 + 0.1
 
     %Vehicle{
       # speed: :rand.uniform(4),
       speed: speed,
       location_on_road: 0,
-      marker: "#{speed}"
+      marker: "#{round(speed)}"
       # marker: Enum.random(String.graphemes("◂▴◦▾◊"))
     }
   end

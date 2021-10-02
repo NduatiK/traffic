@@ -1,0 +1,40 @@
+# Untitled notebook
+
+## Road
+
+```elixir
+defmodule R do
+  def recompile() do
+    Mix.Task.reenable("app.start")
+    Mix.Task.reenable("compile")
+    Mix.Task.reenable("compile.all")
+    compilers = Mix.compilers()
+    Enum.each(compilers, &Mix.Task.reenable("compile.#{&1}"))
+    Mix.Task.run("compile.all")
+  end
+end
+```
+
+```elixir
+R.recompile()
+```
+
+```elixir
+alias Traffic.Network.Road
+alias Traffic.Vehicles.Vehicle
+```
+
+```elixir
+road = Road.preloaded()
+```
+
+```elixir
+0..10
+|> Enum.reduce(road, fn _, road ->
+  road = Road.step(road)
+  :timer.sleep(2000)
+  IO.inspect(road)
+  IO.inspect("\n")
+  road
+end)
+```

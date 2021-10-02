@@ -1,20 +1,31 @@
 defmodule Traffic.Vehicles.Vehicle do
   use TypedStruct
   alias Traffic.Vehicles.DriverProfile
+  alias __MODULE__
 
   typedstruct do
     # Self awareness
-    field :speed, integer(), default: 0
-    field :driver_profile, DriverProfile.t()
+    field(:speed, integer(), default: 0)
+    field(:driver_profile, DriverProfile.t())
 
     # Location awareness
-    field :location_on_road, float(), enforce: true
-    field :road, pid()
-    field :junction, pid()
+    field(:location_on_road, float(), enforce: true)
+    field(:road, pid())
+    field(:junction, pid())
 
     # Visual knowledge
-    field :vehicle_appx_dist, list({pid(), integer()})
-    field :junction_appx_dist, {pid(), integer()}
+    field(:vehicle_appx_dist, list({pid(), integer()}))
+    field(:junction_appx_dist, {pid(), integer()})
+
+    field(:marker, String.t())
+  end
+
+  def random() do
+    %Vehicle{
+      speed: :rand.uniform(4),
+      location_on_road: 0,
+      marker: Enum.random(String.graphemes("◂▴◦▾◊"))
+    }
   end
 
   def start_moving() do
@@ -39,11 +50,5 @@ defmodule Traffic.Vehicles.Vehicle do
   end
 
   def look_ahead() do
-  end
-end
-
-defimpl Inspect, for: Traffic.Vehicles.Vehicle do
-  def inspect(vehicle, _opts) do
-    "X"
   end
 end

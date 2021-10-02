@@ -1,0 +1,16 @@
+# Untitled notebook
+
+## Road
+
+```elixir
+alias Traffic.Network.Road
+alias Traffic.Vehicles.Vehicle
+```
+
+```elixir
+road = Road.preloaded()
+```
+
+```elixir
+road = Road.step(road)
+```

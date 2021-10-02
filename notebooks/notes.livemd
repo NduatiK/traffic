@@ -21,12 +21,12 @@ R.recompile()
 
 ```elixir
 alias Traffic.Network.Road
+alias Traffic.Network.Junction
 alias Traffic.Vehicles.Vehicle
 ```
 
 ```elixir
 road = Road.preloaded()
-# road = Road.step(road)
 ```
 
 ```elixir
@@ -37,16 +37,35 @@ h(clear)
 
 ```elixir
 import IEx.Helpers
+```
 
-0..10
-|> Enum.reduce(road, fn _, road ->
-  road = Road.step(road)
+```elixir
+R.recompile()
+0
+```
+
+```elixir
+road1 = Road.preloaded("left")
+road2 = Road.preloaded("right")
+
+junction = %Junction{
+  left_light: :red,
+  right_light: :green,
+  left_road: road1,
+  right_road: road2
+}
+```
+
+```elixir
+0..20
+|> Enum.reduce(junction, fn _, junction ->
+  junction = Junction.step(junction)
+
   clear()
   :timer.sleep(1000)
-  IO.inspect(road)
-  IO.inspect("\n")
+  IO.inspect(junction)
   clear()
 
-  road
+  junction
 end)
 ```

@@ -92,7 +92,7 @@ defmodule Traffic.Network.Road do
           vehicle, {vehicle_acc, exited} ->
             case move_forward(vehicle, vehicle_acc, road, can_exit) do
               {[], leader_position} ->
-                {[], {vehicle_acc, [{elem(vehicle, 0), leader_position} | exited]}}
+                {[], {road.length, [{elem(vehicle, 0), leader_position} | exited]}}
 
               {vehicle, leader_position} ->
                 {vehicle, {leader_position, exited}}

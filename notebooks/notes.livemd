@@ -69,3 +69,8 @@ junction = %Junction{
   junction
 end)
 ```
+
+```elixir
+R.recompile()
+0
+```

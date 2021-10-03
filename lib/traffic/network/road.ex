@@ -15,6 +15,10 @@ defmodule Traffic.Network.Road do
     field :lanes_to_left, list({pid(), float()}), default: []
   end
 
+  def lanes(road) do
+    {Enum.count(road.lanes_to_right), Enum.count(road.lanes_to_left)}
+  end
+
   def preloaded(name \\ :unique_road) do
     %Road{
       name: name,

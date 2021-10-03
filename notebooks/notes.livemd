@@ -41,7 +41,7 @@ import IEx.Helpers
 
 ```elixir
 R.recompile()
-0
+1
 ```
 
 ```elixir
@@ -54,6 +54,11 @@ junction = %Junction{
   left_road: road1,
   right_road: road2
 }
+```
+
+```elixir
+R.recompile()
+1
 ```
 
 ```elixir

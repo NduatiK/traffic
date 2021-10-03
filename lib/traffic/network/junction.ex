@@ -18,7 +18,7 @@ defmodule Traffic.Network.Junction do
             left: [vehicle_in_junction] | nil,
             right: [vehicle_in_junction] | nil
           },
-          default: %{left: [], right: []}
+          default: %{left: nil, right: nil}
   end
 
   def step(%Junction{} = junction) do
@@ -29,8 +29,11 @@ defmodule Traffic.Network.Junction do
     left_road_ = Road.step(junction.left_road, [:lanes_to_right])
     right_road_ = Road.step(junction.right_road, [:lanes_to_left])
 
-    in_junction_from_left = left_road_.exited_to_right
-    in_junction_from_right = right_road_.exited_to_left
+    in_junction_from_left =
+      left_road_.exited_to_right
+
+    in_junction_from_right =
+      right_road_.exited_to_left
 
     right_road =
       Road.join_road(
@@ -66,12 +69,13 @@ defimpl Inspect, for: Traffic.Network.Junction do
 
   # Kernel.inspect(junction)
   def inspect(junction, _opts) do
-    lane_count =
+    lanes =
       [junction.left_road, junction.right_road]
-      |> Enum.map(&Road.lanes/1)
-      |> Enum.map(fn {l, r} ->
-        3 + 2 + l + r
-      end)
+      |> Enum.map(&Kernel.inspect(&1))
+
+    lane_count =
+      lanes
+      |> Enum.map(&(String.split(&1, "\n") |> Enum.count()))
       |> Enum.max()
 
     junction_str =
@@ -104,8 +108,7 @@ defimpl Inspect, for: Traffic.Network.Junction do
         String.pad_trailing(str, max_width) <> "|"
       end)
 
-    [junction.left_road, junction.right_road]
-    |> Enum.map(&Kernel.inspect/1)
+    lanes
     # ["====\n====", "++++\n++++"]
     |> Enum.map(&String.split(&1, "\n"))
     # [["====","===="], ["++++","++++"]]

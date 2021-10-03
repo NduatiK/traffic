@@ -33,14 +33,14 @@ defmodule Traffic.Network.Road do
         ]
       ],
       lanes_to_left: [
-        # [
-        #   {Vehicle.random(), 0.5},
-        #   {Vehicle.random(), 1},
-        #   {Vehicle.random(), 2},
-        #   {Vehicle.random(), 4},
-        #   {Vehicle.random(), 8},
-        #   {Vehicle.random(), 9}
-        # ],
+        [
+          {Vehicle.random(), 0.5},
+          {Vehicle.random(), 1},
+          {Vehicle.random(), 2},
+          {Vehicle.random(), 4},
+          {Vehicle.random(), 8},
+          {Vehicle.random(), 9}
+        ],
         [
           {Vehicle.random(), 0},
           {Vehicle.random(), 1},
@@ -63,23 +63,40 @@ defmodule Traffic.Network.Road do
     |> update_lanes(:lanes_to_right, Enum.member?(greens, :lanes_to_right))
   end
 
-  def join_road(road, direction, lanes) when is_list(lanes) do
-    Enum.reduce(lanes, road, fn vehicles, road ->
-      vehicle_join_road(
-        road,
-        direction,
-        vehicles
+  def join_road(road, direction, nil) do
+    road
+  end
+
+  def join_road(road, direction, vehicle_lanes) when is_list(vehicle_lanes) do
+    vehicle_join_road(
+      road,
+      direction,
+      vehicle_lanes
+      |> Enum.map(fn lane ->
+        lane
         |> Enum.map(fn {v, _} -> {v, 0} end)
-      )
-    end)
+      end)
+    )
   end
 
-  def vehicle_join_road(road = %{lanes_to_left: [lane1 | other_lanes]}, :right, vehicles) do
-    %{road | lanes_to_left: [vehicles ++ lane1 | other_lanes]}
+  def vehicle_join_road(road = %{lanes_to_left: lanes}, :right, vehicles) do
+    %{road | lanes_to_left: vehicle_join_lanes(lanes, vehicles)}
   end
 
-  def vehicle_join_road(road = %{lanes_to_right: [lane1 | other_lanes]}, :left, vehicles) do
-    %{road | lanes_to_right: [vehicles ++ lane1 | other_lanes]}
+  def vehicle_join_road(road = %{lanes_to_right: lanes}, :left, vehicles) do
+    %{road | lanes_to_right: vehicle_join_lanes(lanes, vehicles)}
+  end
+
+  def vehicle_join_lanes(lanes, vehicles) do
+    do_vehicle_join_lanes(lanes, vehicles)
+  end
+
+  def do_vehicle_join_lanes([], _) do
+    []
+  end
+
+  def do_vehicle_join_lanes([lane1 | other_lanes], [vehicles | other_vehicles]) do
+    [vehicles ++ lane1 | do_vehicle_join_lanes(other_lanes, other_vehicles)]
   end
 
   def to_exit(:lanes_to_left), do: :exited_to_left

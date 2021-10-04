@@ -45,41 +45,51 @@ R.recompile()
 ```
 
 ```elixir
-road1 = Road.preloaded("left")
-road2 = Road.preloaded("right")
+road_a = Road.preloaded(:a)
+road_b = Road.preloaded(:b)
 
 junction = %Junction{
-  left_light: :red,
-  right_light: :green,
-  left_road: road1,
-  right_road: road2
+  roads: %{
+    a: %{road: road_a, connection: :right, light: :red},
+    b: %{road: road_b, connection: :left, light: :red}
+  }
 }
 ```
 
 ```elixir
 R.recompile()
-1
+junction
 ```
 
 ```elixir
-0..20
-|> Enum.reduce(junction, fn _, junction ->
-  junction = Junction.step(junction)
-
-  clear()
-  :timer.sleep(1000)
-  IO.inspect(junction)
-  clear()
-
-  junction
-end)
+[lane | _] = [[]]
 ```
 
 ```elixir
 R.recompile()
-0
-```
 
-```elixir
-junction = Junction.step(junction)
+0..30
+|> Enum.reduce(junction, fn i, junction ->
+  junction = Junction.step(junction)
+
+  clear()
+  :timer.sleep(70)
+  IO.inspect(junction)
+  clear()
+
+  if i > 1 do
+    # if i > 15 do
+    %{
+      junction
+      | roads:
+          junction.roads
+          |> Enum.map(fn {name, road} ->
+            {name, Map.put(road, :light, :green)}
+          end)
+          |> Enum.into(%{})
+    }
+  else
+    junction
+  end
+end)
 ```

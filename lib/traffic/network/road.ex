@@ -1,4 +1,7 @@
 defmodule Traffic.Network.Road do
+  @type road_end :: :left | :right
+  @type name :: atom()
+
   use TypedStruct
   alias __MODULE__
   alias Traffic.Vehicles.Vehicle
@@ -11,19 +14,19 @@ defmodule Traffic.Network.Road do
 
     # Location awareness
     field :length, integer(), enforce: true
-    field :lanes_to_right, list(list({pid(), float()})), default: []
-    field :lanes_to_left, list({pid(), float()}), default: []
+    field :right, list(list({pid(), float()})), default: []
+    field :left, list({pid(), float()}), default: []
   end
 
   def lanes(road) do
-    {Enum.count(road.lanes_to_right), Enum.count(road.lanes_to_left)}
+    {Enum.count(road.right), Enum.count(road.left)}
   end
 
   def preloaded(name \\ :unique_road) do
     %Road{
       name: name,
       length: 10,
-      lanes_to_right: [
+      right: [
         [
           {Vehicle.random(), 0},
           {Vehicle.random(), 3},
@@ -32,7 +35,7 @@ defmodule Traffic.Network.Road do
           {Vehicle.random(), 9}
         ]
       ],
-      lanes_to_left: [
+      left: [
         [
           {Vehicle.random(), 0.5},
           {Vehicle.random(), 1},
@@ -53,38 +56,41 @@ defmodule Traffic.Network.Road do
     }
   end
 
-  def step(%{road: %Road{} = road}) do
-    step(road)
+  def step(road, open_exits \\ [], road_names)
+
+  def step(%{road: %Road{} = road}, open_exits, road_names) do
+    step(road, open_exits, road_names)
   end
 
-  def step(%Road{} = road, greens \\ []) do
-    %{road: road, exited_to_left: [], exited_to_right: []}
-    |> update_lanes(:lanes_to_left, Enum.member?(greens, :lanes_to_left))
-    |> update_lanes(:lanes_to_right, Enum.member?(greens, :lanes_to_right))
+  def step(%Road{} = road, open_exits, road_names) do
+    %{road: road, left: [], right: []}
+    |> update_lanes(:left, Enum.member?(open_exits, {:left, :green}), road_names)
+    |> update_lanes(:right, Enum.member?(open_exits, {:right, :green}), road_names)
   end
 
-  def join_road(road, direction, nil) do
+  def join_road(%Road{} = road, direction, nil) do
     road
   end
 
-  def join_road(road, direction, vehicle_lanes) when is_list(vehicle_lanes) do
+  def join_road(%Road{} = road, direction, vehicle_lanes) when is_list(vehicle_lanes) do
     vehicle_join_road(
       road,
       direction,
       vehicle_lanes
       |> Enum.map(fn lane ->
         lane
-        |> Enum.map(fn {v, _} -> {v, 0} end)
+        |> Enum.map(fn {v, _, _} -> {v, 0} end)
       end)
     )
   end
 
-  def vehicle_join_road(road = %{lanes_to_left: lanes}, :right, vehicles) do
-    %{road | lanes_to_left: vehicle_join_lanes(lanes, vehicles)}
+  @spec vehicle_join_road(Road.t(), Road.road_end(), [[{Vehicle.t(), float()}]]) :: Road.t()
+  def vehicle_join_road(road = %{left: lanes}, :right, vehicles) do
+    %{road | left: vehicle_join_lanes(lanes, vehicles)}
   end
 
-  def vehicle_join_road(road = %{lanes_to_right: lanes}, :left, vehicles) do
-    %{road | lanes_to_right: vehicle_join_lanes(lanes, vehicles)}
+  def vehicle_join_road(road = %{right: lanes}, :left, vehicles) do
+    %{road | right: vehicle_join_lanes(lanes, vehicles)}
   end
 
   def vehicle_join_lanes(lanes, vehicles) do
@@ -99,10 +105,10 @@ defmodule Traffic.Network.Road do
     [vehicles ++ lane1 | do_vehicle_join_lanes(other_lanes, other_vehicles)]
   end
 
-  def to_exit(:lanes_to_left), do: :exited_to_left
-  def to_exit(:lanes_to_right), do: :exited_to_right
+  def to_exit(:left), do: :left
+  def to_exit(:right), do: :right
 
-  def update_lanes(%{road: road} = data, lane_name, can_exit) do
+  def update_lanes(%{road: road} = data, lane_name, can_exit, road_names) do
     {lanes, exits} =
       road
       |> Map.get(lane_name)
@@ -110,13 +116,14 @@ defmodule Traffic.Network.Road do
         lane
         |> Enum.reverse()
         |> Enum.flat_map_reduce({nil, []}, fn
-          vehicle, {vehicle_acc, exited} ->
-            case move_forward(vehicle, vehicle_acc, road, can_exit) do
-              {[], leader_position} ->
-                {[], {road.length, [{elem(vehicle, 0), leader_position} | exited]}}
+          vehicle, {vehicle_acc, exited_veh_acc} ->
+            case move_forward(vehicle, vehicle_acc, road, can_exit, road_names) do
+              {[], leader_position, exit_road} ->
+                {[],
+                 {road.length, [{elem(vehicle, 0), leader_position, exit_road} | exited_veh_acc]}}
 
               {vehicle, leader_position} ->
-                {vehicle, {leader_position, exited}}
+                {vehicle, {leader_position, exited_veh_acc}}
             end
         end)
         |> then(fn {vehicles, {_, exited}} ->
@@ -129,7 +136,7 @@ defmodule Traffic.Network.Road do
     |> Map.put(to_exit(lane_name), exits)
   end
 
-  def move_forward({vehicle, location}, nil, road, can_exit) do
+  def move_forward({vehicle, location}, nil, road, can_exit, road_names) do
     next_location = location + vehicle.speed
 
     next_location =
@@ -140,11 +147,16 @@ defmodule Traffic.Network.Road do
     if next_location < road.length do
       {[{vehicle, next_location}], next_location}
     else
-      {[], next_location}
+      exit_road =
+        road_names
+        |> Enum.filter(fn {name, _} -> name != road.name end)
+        |> Enum.random()
+
+      {[], next_location, exit_road}
     end
   end
 
-  def move_forward({vehicle, location}, leader_pos, road, can_exit) do
+  def move_forward({vehicle, location}, leader_pos, road, can_exit, road_names) do
     next_location = min(leader_pos - vehicle_length(), location + vehicle.speed)
 
     next_location =
@@ -155,7 +167,12 @@ defmodule Traffic.Network.Road do
     if next_location < road.length do
       {[{vehicle, next_location}], next_location}
     else
-      {[], next_location}
+      exit_road =
+        road_names
+        |> Enum.filter(fn {name, _} -> name != road.name end)
+        |> Enum.random()
+
+      {[], next_location, exit_road}
     end
   end
 end
@@ -167,9 +184,9 @@ defimpl Inspect, for: Traffic.Network.Road do
   def inspect(road, _opts) do
     "\nName: #{road.name}\n" <>
       String.duplicate("<", road.length * @scale) <>
-      inspect_lanes(road.lanes_to_left, :down, road.length) <>
+      inspect_lanes(road.left, :down, road.length) <>
       String.duplicate("=", road.length * @scale) <>
-      inspect_lanes(road.lanes_to_right, :up, road.length) <>
+      inspect_lanes(road.right, :up, road.length) <>
       String.duplicate(">", road.length * @scale)
   end
 

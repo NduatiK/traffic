@@ -7,71 +7,119 @@ defmodule Traffic.Network.Junction do
   @type vehicle_in_junction :: %{vehicle: Vehicle.t(), target_road: atom()}
 
   typedstruct do
-    field :left_light, :red | :yellow | :green
-    field :right_light, :red | :yellow | :green
-    # field :roads, list(Road.t()), default: []
-    field :left_road, Road.t()
-    field :right_road, Road.t()
+    # , [{Road.t(), Road.road_end()}]
+    field :roads, %{}, default: %{}
+    # field :roads, map(Road.name(), [{Road.t(), Road.road_end()}]), default: %{}
 
-    field :vehicle_in_junction,
-          %{
-            left: [vehicle_in_junction] | nil,
-            right: [vehicle_in_junction] | nil
-          },
-          default: %{left: nil, right: nil}
+    field :vehicle_in_junction, %{}, default: %{}
   end
+
+  def invert(:right), do: :left
+  def invert(:left), do: :right
 
   def step(%Junction{} = junction) do
     # TODO: should pass through junction
     # TODO: block if junction blocked
     # TODO: block return info on if has space
 
-    left_road_ = Road.step(junction.left_road, [:lanes_to_right])
-    right_road_ = Road.step(junction.right_road, [:lanes_to_left])
+    road_names =
+      junction.roads
+      |> Enum.map(fn {name, %{connection: connection}} ->
+        {name, connection}
+      end)
 
-    in_junction_from_left =
-      left_road_.exited_to_right
+    roads =
+      junction.roads
+      |> Enum.map(fn {road_end, %{road: road, connection: connection, light: light} = r} ->
+        {road_end, %{r | road: Road.step(road, [{connection, light}], road_names)}}
+      end)
+      |> Enum.into(%{})
 
-    in_junction_from_right =
-      right_road_.exited_to_left
+    vehicle_in_junction =
+      roads
+      |> Enum.map(fn {road_name, %{connection: connection}} ->
+        {{road_name, connection}, get_in(roads, [road_name, :road, connection])}
+      end)
+      |> Enum.into(%{})
 
-    right_road =
-      Road.join_road(
-        right_road_.road,
-        :left,
-        junction.vehicle_in_junction.left
-      )
+    #
 
-    left_road =
-      Road.join_road(
-        left_road_.road,
-        :right,
-        junction.vehicle_in_junction.right
-      )
+    roads =
+      roads
+      |> Enum.map(fn {name, v} ->
+        connection = get_in(roads, [name, :connection])
+
+        connection_data = v.road
+
+        {name, connection} |> IO.inspect()
+
+        vehicles =
+          junction.vehicle_in_junction
+          |> Enum.flat_map(fn {_, exit_lanes} ->
+            exit_lanes
+            |> IO.inspect(label: "exit_lanes")
+            |> Enum.map(fn vehicles ->
+              vehicles
+              |> Enum.filter(fn
+                {_, _, exit_road} ->
+                  exit_road == {name, connection}
+
+                _ ->
+                  false
+              end)
+            end)
+          end)
+          |> then(fn
+            [] ->
+              connection_data = v.road
+              lanes = Enum.count(Map.from_struct(connection_data.road)[invert(connection)])
+              List.duplicate([], lanes)
+
+            a ->
+              a
+          end)
+          |> IO.inspect(label: "vvv")
+
+        road =
+          Road.join_road(
+            connection_data.road,
+            connection,
+            vehicles
+          )
+
+        # |> IO.inspect(label: "road")
+
+        {name, put_in(v, [:road], road)}
+      end)
+      |> Enum.into(%{})
+
+    # |> IO.inspect()
 
     %{
       junction
-      | left_road: left_road,
-        right_road: right_road,
-        vehicle_in_junction: %{
-          left: in_junction_from_left,
-          right: in_junction_from_right
-        }
+      | roads: roads,
+        vehicle_in_junction: vehicle_in_junction
     }
   end
 end
 
 defimpl Inspect, for: Traffic.Network.Junction do
-  alias Traffic.Network.Road
+  alias Traffic.Network.Junction
   # "#{match_light(:red, junction.light)}\n" <>
   #   "#{match_light(:yellow, junction.light)}\n" <>
   #   "#{match_light(:green, junction.light)}\n"
 
   # Kernel.inspect(junction)
-  def inspect(junction, _opts) do
+  def inspect(%Junction{} = junction, _opts) do
+    keys =
+      Map.keys(junction.roads)
+      |> Enum.sort()
+
     lanes =
-      [junction.left_road, junction.right_road]
-      |> Enum.map(&Kernel.inspect(&1))
+      for k <- keys do
+        junction.roads[k]
+      end
+      |> Enum.map(&Kernel.inspect(&1.road))
 
     lane_count =
       lanes
@@ -79,19 +127,26 @@ defimpl Inspect, for: Traffic.Network.Junction do
       |> Enum.max()
 
     junction_str =
-      [
-        {junction.vehicle_in_junction.right, "«"},
-        {junction.vehicle_in_junction.left, "»"}
-      ]
-      |> Enum.flat_map(fn {lanes, arrow} ->
-        lanes
-        |> Enum.map(fn
-          [{vehicle, _}] ->
-            "|#{row_light(junction.left_light)}|#{arrow}#{vehicle.marker}#{arrow}|#{row_light(junction.right_light)}"
+      for k <- keys do
+        {junction.vehicle_in_junction[{k, junction.roads[k].connection}],
+         arrow(junction.roads[k].connection), junction.roads[k].light}
+      end
+      |> Enum.reverse()
+      |> Enum.flat_map(fn
+        {nil, arrow, light} ->
+          [
+            "|#{row_light(light)}|#{arrow} #{arrow}|#{row_light(light)}"
+          ]
 
-          [] ->
-            "|#{row_light(junction.left_light)}|#{arrow} #{arrow}|#{row_light(junction.right_light)}"
-        end)
+        {lanes, arrow, light} ->
+          lanes
+          |> Enum.map(fn
+            [{vehicle, _, _}] ->
+              "|#{row_light(light)}|#{arrow}#{vehicle.marker}#{arrow}|#{row_light(light)}"
+
+            [] ->
+              "|#{row_light(light)}|#{arrow} #{arrow}|#{row_light(light)}"
+          end)
       end)
       |> Enum.intersperse("")
 
@@ -132,6 +187,10 @@ defimpl Inspect, for: Traffic.Network.Junction do
       match_light(:yellow, light) <>
       match_light(:green, light)
   end
+
+  def arrow(:left), do: "«"
+  def arrow(:right), do: "»"
+  # "◉"
 
   def match_light(light, light) do
     # "◉"

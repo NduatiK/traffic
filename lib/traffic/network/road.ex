@@ -73,13 +73,15 @@ defmodule Traffic.Network.Road do
   end
 
   def join_road(%Road{} = road, direction, vehicle_lanes) when is_list(vehicle_lanes) do
+    # def join_road(%Road{} = road, direction, vehicle_lanes) do
+
     vehicle_join_road(
       road,
       direction,
       vehicle_lanes
       |> Enum.map(fn lane ->
         lane
-        |> Enum.map(fn {v, _, _} -> {v, 0} end)
+        |> Enum.map(fn v -> {v, 0} end)
       end)
     )
   end
@@ -112,15 +114,17 @@ defmodule Traffic.Network.Road do
     {lanes, exits} =
       road
       |> Map.get(lane_name)
-      |> Enum.map(fn lane ->
+      |> Enum.with_index()
+      |> Enum.map(fn {lane, index} ->
         lane
         |> Enum.reverse()
         |> Enum.flat_map_reduce({nil, []}, fn
           vehicle, {vehicle_acc, exited_veh_acc} ->
-            case move_forward(vehicle, vehicle_acc, road, can_exit, road_names) do
-              {[], leader_position, exit_road} ->
+            case move_forward(vehicle, vehicle_acc, road, can_exit, road_names, index) do
+              {[], _, future_road} ->
                 {[],
-                 {road.length, [{elem(vehicle, 0), leader_position, exit_road} | exited_veh_acc]}}
+                 {road.length,
+                  [%{vehicle: elem(vehicle, 0), future_road: future_road} | exited_veh_acc]}}
 
               {vehicle, leader_position} ->
                 {vehicle, {leader_position, exited_veh_acc}}
@@ -136,7 +140,7 @@ defmodule Traffic.Network.Road do
     |> Map.put(to_exit(lane_name), exits)
   end
 
-  def move_forward({vehicle, location}, nil, road, can_exit, road_names) do
+  def move_forward({vehicle, location}, nil, road, can_exit, road_names, lane_index) do
     next_location = location + vehicle.speed
 
     next_location =
@@ -147,16 +151,17 @@ defmodule Traffic.Network.Road do
     if next_location < road.length do
       {[{vehicle, next_location}], next_location}
     else
-      exit_road =
+      future_road =
         road_names
         |> Enum.filter(fn {name, _} -> name != road.name end)
         |> Enum.random()
+        |> then(fn {name, enter_direction} -> {name, enter_direction, lane_index} end)
 
-      {[], next_location, exit_road}
+      {[], next_location, future_road}
     end
   end
 
-  def move_forward({vehicle, location}, leader_pos, road, can_exit, road_names) do
+  def move_forward({vehicle, location}, leader_pos, road, can_exit, road_names, lane_index) do
     next_location = min(leader_pos - vehicle_length(), location + vehicle.speed)
 
     next_location =
@@ -167,12 +172,13 @@ defmodule Traffic.Network.Road do
     if next_location < road.length do
       {[{vehicle, next_location}], next_location}
     else
-      exit_road =
+      future_road =
         road_names
         |> Enum.filter(fn {name, _} -> name != road.name end)
         |> Enum.random()
+        |> then(fn {name, enter_direction} -> {name, enter_direction, lane_index} end)
 
-      {[], next_location, exit_road}
+      {[], next_location, future_road}
     end
   end
 end

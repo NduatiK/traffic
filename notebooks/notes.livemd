@@ -27,6 +27,8 @@ alias Traffic.Vehicles.Vehicle
 
 ```elixir
 road = Road.preloaded()
+# IO.inspect(road)
+# IO.inspect(road |> Road.step([]) |> Road.step([]))
 ```
 
 ```elixir
@@ -62,34 +64,46 @@ junction
 ```
 
 ```elixir
-[lane | _] = [[]]
+
 ```
 
 ```elixir
 R.recompile()
 
-0..30
-|> Enum.reduce(junction, fn i, junction ->
-  junction = Junction.step(junction)
+junction =
+  0..30
+  |> Enum.reduce(junction, fn i, junction ->
+    junction = Junction.step(junction)
 
-  clear()
-  :timer.sleep(70)
-  IO.inspect(junction)
-  clear()
+    clear()
+    :timer.sleep(200)
+    IO.inspect(i)
+    IO.inspect(junction)
+    clear()
 
-  if i > 1 do
-    # if i > 15 do
-    %{
+    if i > 15 do
+      %{
+        junction
+        | roads:
+            junction.roads
+            |> Enum.map(fn {name, road} ->
+              {name, Map.put(road, :light, :green)}
+            end)
+            |> Enum.into(%{})
+      }
+    else
       junction
-      | roads:
-          junction.roads
-          |> Enum.map(fn {name, road} ->
-            {name, Map.put(road, :light, :green)}
-          end)
-          |> Enum.into(%{})
-    }
-  else
-    junction
-  end
-end)
+    end
+  end)
+```
+
+```elixir
+junction
+```
+
+```elixir
+R.recompile()
+# IO.inspect(junction)
+junction
+junction = Junction.step(junction)
 ```

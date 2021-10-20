@@ -100,11 +100,7 @@ end
 
 defimpl Inspect, for: Traffic.Network.Junction do
   alias Traffic.Network.Junction
-  # "#{match_light(:red, junction.light)}\n" <>
-  #   "#{match_light(:yellow, junction.light)}\n" <>
-  #   "#{match_light(:green, junction.light)}\n"
 
-  # Kernel.inspect(junction)
   def inspect(%Junction{} = junction, _opts) do
     keys =
       Map.keys(junction.roads)
@@ -150,10 +146,11 @@ defimpl Inspect, for: Traffic.Network.Junction do
 
     junction_str = ["", "", "" | junction_str]
 
-    max_width =
-      junction_str
-      |> Enum.map(&String.length/1)
-      |> Enum.max()
+    max_width = 13
+    
+    # junction_str
+    # |> Enum.map(&String.length/1)
+    # |> Enum.max()
 
     junction_str =
       (junction_str ++ List.duplicate("|", lane_count - Enum.count(junction_str)))
@@ -191,18 +188,18 @@ defimpl Inspect, for: Traffic.Network.Junction do
   # "◉"
 
   def match_light(light = :green, light) do
-    # "◉"
-    "G"
+    "\e[32m\e[1m◉\e[0m"
+    # "G"
   end
 
   def match_light(light = :yellow, light) do
+    "\e[33m\e[1m◉\e[0m"
     # "◉"
-    "Y"
   end
 
   def match_light(light = :red, light) do
-    # "◉"
-    "R"
+    "\e[31m\e[1m◉\e[0m"
+    # "—"
   end
 
   def match_light(_, _) do

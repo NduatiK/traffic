@@ -51,7 +51,8 @@ defmodule Traffic.MixProject do
       {:plug_cowboy, "~> 2.5"},
 
       # ----
-      {:typed_struct, "~> 0.2.1"}
+      {:typed_struct, "~> 0.2.1"},
+      {:libgraph, "~> 0.7"}
     ]
   end
 

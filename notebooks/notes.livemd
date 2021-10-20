@@ -1,6 +1,6 @@
 # Traffic
 
-## Road
+## Setup
 
 ```elixir
 defmodule R do
@@ -25,26 +25,66 @@ alias Traffic.Network.Junction
 alias Traffic.Vehicles.Vehicle
 ```
 
+## Vehicle Modelling 🚗
+
+We define a vehicle based only on its length and the profile of the driver.
+
+Our research shows that there are 5 main driver profiles:
+
+| Profile                | Description                                                                                                                                                  |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Hunters/Tailgaters** | Drivers who tend to stay as close as possible to the leading vehicle and rush forward. Typically young males and females.                                    |
+| **Planners**           | Drivers who drive fast but maintain a safe distance from lead vehicles. Likely to be male (primarily young)                                                  |
+| **Flow Conformists**   | Drivers who conform to the patterns vehicles around them. This is an average driver, and is most likely middle-aged.                                         |
+| **Extremists**         | Drivers who present an unpredictable driving patterns driving both aggressively and passively. These drivers are evenly distributed across demographics.     |
+| **Ultraconservative**  | Drivers who maintain a big distance with the leading vehicle. These drivers have gentler acceleration curves and slower speeds. Likely to be old and female. |
+
+These can be modelled using:
+
+* Acceleration
+* Top speed
+* Distance from lead vehicle
+* A predictability score
+
+```elixir
+Vehicle.random()
+```
+
+## Roads 🛣
+
+A road
+
+* keeps track of the vehicles driving on it
+* responds to ticks to update the vehicles based on their speed.
+
+### Properties
+
+| Property | Description                                                              |
+| -------- | ------------------------------------------------------------------------ |
+| Length   | Distance between the two endts of a road                                 |
+| Lanes    | A road has (possibly empty) arrays of left headed and right headed lanes |
+|          | Each lane keeps track of the vehicles on it to prevent collisions.       |
+|          | Vehicles see the world through the lane                                  |
+
 ```elixir
 road = Road.preloaded()
-# IO.inspect(road)
-# IO.inspect(road |> Road.step([]) |> Road.step([]))
+Map.from_struct(road)
 ```
 
 ```elixir
-import IEx.Helpers
-
-h(clear)
+road
+# |> Road.step([])
+# |> then(& &1.road)
 ```
 
-```elixir
-import IEx.Helpers
-```
+## Junctions 🚥
 
-```elixir
-R.recompile()
-1
-```
+A junction
+
+* connects to multiple roads
+* controls vehicle movement into the junction based on lights or emptiness
+* contains vehicles crossing the junction
+* transfers vehicles to other roads
 
 ```elixir
 road_a = Road.preloaded(:a)
@@ -56,10 +96,13 @@ junction = %Junction{
     b: %{road: road_b, connection: :left, light: :red}
   }
 }
+
+Map.from_struct(junction)
+|> put_in([:roads, :a, :road], "...")
+|> put_in([:roads, :b, :road], "...")
 ```
 
 ```elixir
-R.recompile()
 junction
 ```
 
@@ -71,23 +114,31 @@ junction
 R.recompile()
 
 junction =
-  0..30
+  0..50
   |> Enum.reduce(junction, fn i, junction ->
     junction = Junction.step(junction)
 
-    clear()
-    :timer.sleep(200)
-    IO.inspect(i)
+    :timer.sleep(400)
+    # IO.inspect(i)
     IO.inspect(junction)
-    clear()
 
-    if i > 15 do
+    if i > 20 do
       %{
         junction
         | roads:
             junction.roads
-            |> Enum.map(fn {name, road} ->
-              {name, Map.put(road, :light, :green)}
+            |> Enum.map(fn
+              {:a = name, road} when i > 20 ->
+                {name, Map.put(road, :light, :green)}
+
+              {:a = name, road} when i < 40 ->
+                {name, Map.put(road, :light, :red)}
+
+              {:b = name, road} when i > 30 ->
+                {name, Map.put(road, :light, :green)}
+
+              road ->
+                road
             end)
             |> Enum.into(%{})
       }
@@ -101,9 +152,11 @@ junction =
 junction
 ```
 
-```elixir
-R.recompile()
-# IO.inspect(junction)
-junction
-junction = Junction.step(junction)
-```
+## TODO
+
+* [ ] Complete implementing driver profiles
+* [ ] Implement network of roads and junctions
+* [ ] Visualize road network in browser (SVG)
+* [ ] Complete random vehicle generation and removal based on road usage patterns
+* [ ] Add route planning based on A-star to provide random start and end points for cars
+* [ ] Add signal optimization

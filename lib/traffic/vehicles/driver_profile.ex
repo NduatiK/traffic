@@ -8,10 +8,13 @@ defmodule Traffic.Vehicles.DriverProfile do
     field :speed_std_dev, float(), default: 5
     # in Km.h/s, default: Up to 60 KpH in 15 seconds
     field :initial_acceleration, float(), default: 60 / 15
+
+    # in m, default: 5
+    field :distance_from_lead, float(), default: 5
   end
 
   def default() do
-    %DriverProfile{
+  %DriverProfile{
       mean_speed: 40,
       initial_acceleration: 50 / 15
     }

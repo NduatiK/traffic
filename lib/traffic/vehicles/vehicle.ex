@@ -10,12 +10,19 @@ defmodule Traffic.Vehicles.Vehicle do
 
     # Location awareness
     field(:location_on_road, float(), enforce: true)
-    field(:road, pid())
-    field(:junction, pid())
+    # field(:road, pid())
+    # field(:junction, pid())
 
     # Visual knowledge
-    field(:vehicle_appx_dist, list({pid(), integer()}))
-    field(:junction_appx_dist, {pid(), integer()})
+    field(:visual_knowledge, map,
+      default: %{
+        vehicle_appx_dist: [],
+        junction_appx_dist: []
+      }
+    )
+
+    # field(:vehicle_appx_dist, list({pid(), integer()}))
+    # field(:junction_appx_dist, {pid(), integer()})
 
     field(:marker, String.t())
   end
@@ -24,6 +31,7 @@ defmodule Traffic.Vehicles.Vehicle do
     speed = round(10 * :rand.uniform_real() * 2) / 10 + 0.1
 
     %Vehicle{
+      driver_profile: DriverProfile.default(),
       # speed: :rand.uniform(4),
       speed: speed,
       location_on_road: 0,
@@ -35,12 +43,12 @@ defmodule Traffic.Vehicles.Vehicle do
   def start_moving() do
   end
 
-  def slow_down() do
+  def slow_down(_vehicle) do
   end
 
   def avoid_collision(vehicle, comparative_speed) do
     if comparative_speed == :lt do
-      slow_down()
+      slow_down(vehicle)
     end
   end
 

@@ -17,13 +17,77 @@ end
 
 ```elixir
 R.recompile()
+:ok
 ```
 
 ```elixir
 alias Traffic.Network.Road
 alias Traffic.Network.Junction
 alias Traffic.Vehicles.Vehicle
+import IEx.Helpers
 ```
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+## Traffic Signal Optimization on Time Dependent Traffic Simulation Data
+
+### Components
+
+* Vehicles
+* Roads
+* Junctions
+* Road Networks
+* Signal Timing
+
+<!-- livebook:{"break_markdown":true} -->
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
 
 ## Vehicle Modelling 🚗
 
@@ -50,6 +114,34 @@ These can be modelled using:
 Vehicle.random()
 ```
 
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
 ## Roads 🛣
 
 A road
@@ -68,16 +160,61 @@ A road
 
 ```elixir
 road = Road.preloaded()
-Map.from_struct(road)
+# Map.from_struct(road)
 ```
 
 ```elixir
+R.recompile()
+
 road
-# |> Road.step([])
-# |> then(& &1.road)
+|> Road.step([])
+|> Road.step([])
+|> Road.step([])
+|> Road.step([])
+|> Road.step([])
+|> Road.step([])
+|> Road.step([])
+|> Road.step([])
+|> Road.step([])
+|> Road.step([])
+|> Road.step([])
+|> Road.step([])
+|> Road.step([])
+|> Road.step([])
+|> then(& &1.road)
 ```
 
-## Junctions 🚥
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+## Junctions 🚦
 
 A junction
 
@@ -106,9 +243,37 @@ Map.from_struct(junction)
 junction
 ```
 
-```elixir
+<br />
 
-```
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+## Simulation Demo
 
 ```elixir
 R.recompile()
@@ -119,7 +284,6 @@ junction =
     junction = Junction.step(junction)
 
     :timer.sleep(400)
-    # IO.inspect(i)
     IO.inspect(junction)
 
     if i > 20 do
@@ -131,7 +295,7 @@ junction =
               {:a = name, road} when i > 20 ->
                 {name, Map.put(road, :light, :green)}
 
-              {:a = name, road} when i < 40 ->
+              {:a = name, road} when i > 40 ->
                 {name, Map.put(road, :light, :red)}
 
               {:b = name, road} when i > 30 ->
@@ -152,11 +316,89 @@ junction =
 junction
 ```
 
-## TODO
+<br />
 
-* [ ] Complete implementing driver profiles
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<p>
+<span style="text-align:center">&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp↓</span>
+</p>
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+## Roadmap
+
+* [x] Model one speed car
+* [x] Model roads with lanes
+* [x] Model two road junction
+* [x] Implement simple junction and road movement on tick
+* [ ] Complete implementing driver profiles and use them for new vehicles
 * [ ] Implement network of roads and junctions
-* [ ] Visualize road network in browser (SVG)
+* [ ] Add lane switching
 * [ ] Complete random vehicle generation and removal based on road usage patterns
 * [ ] Add route planning based on A-star to provide random start and end points for cars
 * [ ] Add signal optimization
+* [ ] Visualize road network in browser (SVG)
+
+---
+
+Work on report alongside this
+
+```elixir
+width = 200
+height = 200
+
+#  """
+#  <%= for node <- @nodes do %>
+#    <rect x={node.x} y={node.y} rx="10" ry="10" width={node.width} height={node.height}
+#    class="node" phx-click="show_info" phx-value-info={node_encoded_pid(node.value)} phx-page-loading />
+#    <text class="tree-node-text" x={node.x + 10} y={node.y + div(node.height, 2)} dominant-baseline="central">
+#      <%= node.label %>
+#    </text>
+#  <% end %>
+#  <%= for line <- @lines do %>
+#    <line x1={line.x1} y1={line.y1} x2={line.x2} y2={line.y2} class="line" />
+#  <% end %>
+#  """ <>
+("""
+ <svg width=#{width} height=#{height} id="tree" class="tree">
+ """ <>
+   "</svg>")
+|> IO.inspect()
+|> Kino.Image.new(:svg)
+|> IO.inspect()
+```
+
+```elixir
+{:ok, resp} =
+  :httpc.request(:get, {'https://en.wikipedia.org/wiki/File:SVG_Logo.svg', []}, [],
+    body_format: :binary
+  )
+
+{{_, 200, 'OK'}, _headers, body} = resp
+Kino.Image.new(body, :svg)
+```

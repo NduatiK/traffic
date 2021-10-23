@@ -76,6 +76,27 @@ defmodule TrafficWeb do
     end
   end
 
+  def surface_view_helpers do
+    quote do
+      use Surface.LiveView,
+        layout: {TrafficWeb.LayoutView, "live.html"}
+
+      import Phoenix.LiveView
+      # import TrafficWeb.LiveHelpers
+      # alias AttendantWeb.Components.{Row, Column, Icons, Button, Link}
+      unquote(view_helpers())
+    end
+  end
+
+  def surface_view_component do
+    quote do
+      use Surface.Component
+
+      # alias TrafficWeb.Components.{Row, Column, Icons, Button, Link}
+      unquote(view_helpers())
+    end
+  end
+
   defp view_helpers do
     quote do
       # Use all HTML functionality (forms, tags, etc)

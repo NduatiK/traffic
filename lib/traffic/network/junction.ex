@@ -147,7 +147,7 @@ defimpl Inspect, for: Traffic.Network.Junction do
     junction_str = ["", "", "" | junction_str]
 
     max_width = 13
-    
+
     # junction_str
     # |> Enum.map(&String.length/1)
     # |> Enum.max()

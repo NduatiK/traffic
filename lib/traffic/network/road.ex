@@ -6,7 +6,7 @@ defmodule Traffic.Network.Road do
   alias __MODULE__
   alias Traffic.Vehicles.Vehicle
   def scale, do: 4
-  def vehicle_length, do: 0.25
+  def vehicle_length, do: 0.35
   # def vehicle_length, do: 0.2
 
   typedstruct do
@@ -27,6 +27,13 @@ defmodule Traffic.Network.Road do
       name: name,
       length: 10,
       right: [
+        [
+          {Vehicle.random(), 0},
+          {Vehicle.random(), 3},
+          {Vehicle.random(), 5},
+          {Vehicle.random(), 6},
+          {Vehicle.random(), 9}
+        ],
         [
           {Vehicle.random(), 0},
           {Vehicle.random(), 3},
@@ -119,15 +126,25 @@ defmodule Traffic.Network.Road do
         lane
         |> Enum.reverse()
         |> Enum.flat_map_reduce({nil, []}, fn
-          vehicle, {vehicle_acc, exited_veh_acc} ->
-            case move_forward(vehicle, vehicle_acc, road, can_exit, road_names, index) do
+          vehicle, {last_vehicle, exited_veh_acc} ->
+            case move_forward(vehicle, last_vehicle, road, can_exit, road_names, index) do
               {[], _, future_road} ->
-                {[],
-                 {road.length,
-                  [%{vehicle: elem(vehicle, 0), future_road: future_road} | exited_veh_acc]}}
+                {
+                  [],
+                  {
+                    nil,
+                    [%{vehicle: elem(vehicle, 0), future_road: future_road} | exited_veh_acc]
+                  }
+                }
 
-              {vehicle, leader_position} ->
-                {vehicle, {leader_position, exited_veh_acc}}
+              {vehicle = [{%{speed: speed}, _pos}], leader_position} ->
+                {
+                  vehicle,
+                  {
+                    {leader_position, speed},
+                    exited_veh_acc
+                  }
+                }
             end
         end)
         |> then(fn {vehicles, {_, exited}} ->
@@ -140,8 +157,9 @@ defmodule Traffic.Network.Road do
     |> Map.put(to_exit(lane_name), exits)
   end
 
-  def move_forward({vehicle, location}, nil, road, can_exit, road_names, lane_index) do
-    next_location = location + vehicle.speed
+  @scale_speed 1
+  defp move_forward({vehicle, location}, nil, road, can_exit, road_names, lane_index) do
+    next_location = location + vehicle.speed / @scale_speed
 
     next_location =
       if can_exit,
@@ -161,8 +179,26 @@ defmodule Traffic.Network.Road do
     end
   end
 
-  def move_forward({vehicle, location}, leader_pos, road, can_exit, road_names, lane_index) do
-    next_location = min(leader_pos - vehicle_length(), location + vehicle.speed)
+  @visibility_thresh 4
+  defp move_forward(
+         {vehicle, location},
+         {leader_pos, leader_appx_speed},
+         road,
+         can_exit,
+         road_names,
+         lane_index
+       ) do
+    next_location =
+      cond do
+        leader_pos - location > @visibility_thresh ->
+          location + vehicle.speed / @scale_speed
+
+        true ->
+          # No need to handle anything
+          location + vehicle.speed / @scale_speed
+      end
+
+    next_location = min(leader_pos - vehicle_length(), next_location)
 
     next_location =
       if can_exit,

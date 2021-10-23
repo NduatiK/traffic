@@ -5,6 +5,10 @@ defmodule Traffic.Vehicles.Vehicle do
 
   typedstruct do
     # Self awareness
+    @doc """
+    Units per time
+    """
+    field(:id, integer(), default: 0)
     field(:speed, integer(), default: 0)
     field(:driver_profile, DriverProfile.t())
 
@@ -29,8 +33,10 @@ defmodule Traffic.Vehicles.Vehicle do
 
   def random() do
     speed = round(10 * :rand.uniform_real() * 2) / 10 + 0.1
+    id = :rand.uniform(100_000)
 
     %Vehicle{
+      id: id,
       driver_profile: DriverProfile.default(),
       # speed: :rand.uniform(4),
       speed: speed,

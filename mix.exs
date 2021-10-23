@@ -52,7 +52,10 @@ defmodule Traffic.MixProject do
 
       # ----
       {:typed_struct, "~> 0.2.1"},
-      {:libgraph, "~> 0.7"}
+      {:libgraph, "~> 0.7"},
+      {:surface_formatter, "~> 0.5.1"},
+      {:surface_heroicons, "~> 0.5.2"},
+      {:surface, "~> 0.5.1", override: true}
     ]
   end
 

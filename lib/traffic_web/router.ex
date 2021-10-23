@@ -20,6 +20,12 @@ defmodule TrafficWeb.Router do
     get "/", PageController, :index
   end
 
+  scope "/", TrafficWeb.Pages do
+    pipe_through :browser
+
+    live("/map", Map)
+  end
+
   # Other scopes may use custom stacks.
   # scope "/api", TrafficWeb do
   #   pipe_through :api

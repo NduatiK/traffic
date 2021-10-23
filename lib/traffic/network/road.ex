@@ -157,7 +157,7 @@ defmodule Traffic.Network.Road do
     |> Map.put(to_exit(lane_name), exits)
   end
 
-  @scale_speed 1
+  @scale_speed 100
   defp move_forward({vehicle, location}, nil, road, can_exit, road_names, lane_index) do
     next_location = location + vehicle.speed / @scale_speed
 

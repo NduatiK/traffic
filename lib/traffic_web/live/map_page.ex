@@ -42,14 +42,14 @@ defmodule TrafficWeb.Pages.Map do
       y="0px"
       width={@width}
       height={@height}
-      viewBox="0 0 {@width} {@height}"
-      enable-background="new 0 0 {@width} 510"
+      viewBox={"0 0 #{@width} #{@height}"}
+      enable-background={"new 0 0 #{@width } 510"}
       xml:space="preserve"
     >
       <defs>
         {{:safe, TrafficWeb.Components.Vehicle.mustang()}}
       </defs>
-      <Road id="1" road={@road } lane_width={30} />
+      <Road id="1" road={@road} lane_width={30} />
     </svg>
     """
   end

@@ -3,7 +3,7 @@ defmodule TrafficWeb.Components.LaneDivider do
   prop(width, :integer)
   prop(lane_width, :integer, default: 0)
   prop(offset, :integer, default: 0)
-  prop(index, :integer, default: -1 )
+  prop(index, :integer, default: -1)
   prop(stroke_width, :integer, default: 1)
   prop(stroke, :string, default: "blue")
   prop(solid, :boolean, default: false)

@@ -10,12 +10,12 @@ defmodule Traffic.Network.Road do
   # def vehicle_length, do: 0.2
 
   typedstruct do
-    field :name, String.t(), enforce: true
+    field(:name, String.t(), enforce: true)
 
     # Location awareness
-    field :length, integer(), enforce: true
-    field :right, list(list({pid(), float()})), default: []
-    field :left, list({pid(), float()}), default: []
+    field(:length, integer(), enforce: true)
+    field(:right, list(list({pid(), float()})), default: [])
+    field(:left, list({pid(), float()}), default: [])
   end
 
   def lanes(road) do
@@ -157,7 +157,7 @@ defmodule Traffic.Network.Road do
     |> Map.put(to_exit(lane_name), exits)
   end
 
-  @scale_speed 100
+  @scale_speed 110
   defp move_forward({vehicle, location}, nil, road, can_exit, road_names, lane_index) do
     next_location = location + vehicle.speed / @scale_speed
 

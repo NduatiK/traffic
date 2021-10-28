@@ -30,8 +30,7 @@ defmodule TrafficWeb.Components.Road do
     # <g width={@road.length * 100} height={@height} version="1.1" transform="rotate(-10 50 100) translate(0, 100)">
     # height={(Enum.count(@road.right) + Enum.count(@road.left)) * (@lane_width + 1)}
     ~F"""
-    <g width={@road.length * 100} height={@height}
-    >
+    <g width={@road.length * 100} height={@height}>
       <LaneDivider
         id={"top" <> Atom.to_string(@road.name)}
         width={@road.length * 100}
@@ -41,14 +40,14 @@ defmodule TrafficWeb.Components.Road do
         solid
       />
       <Lane
-      width={@road.length * 100}
-      road_length={@road.length}
-      lanes={@road.right}
-      direction="right"
-      lane_width={@lane_width}
-      id={Atom.to_string(@road.name) <> "right"}
-      flip
-    />
+        width={@road.length * 100}
+        road_length={@road.length}
+        lanes={@road.right}
+        direction="right"
+        lane_width={@lane_width}
+        id={Atom.to_string(@road.name) <> "right"}
+        flip
+      />
       <LaneDivider
         id={"middle" <> Atom.to_string(@road.name)}
         width={@road.length * 100}

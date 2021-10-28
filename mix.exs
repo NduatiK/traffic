@@ -7,7 +7,7 @@ defmodule Traffic.MixProject do
       version: "0.1.0",
       elixir: "~> 1.12",
       elixirc_paths: elixirc_paths(Mix.env()),
-      compilers: [:gettext] ++ Mix.compilers(),
+      compilers: [:gettext] ++ Mix.compilers() ++ [:surface],
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps()
@@ -53,9 +53,9 @@ defmodule Traffic.MixProject do
       # ----
       {:typed_struct, "~> 0.2.1"},
       {:libgraph, "~> 0.7"},
-      {:surface_formatter, "~> 0.5.1"},
-      {:surface_heroicons, "~> 0.5.2"},
-      {:surface, "~> 0.5.1", override: true}
+      {:surface_formatter, "~> 0.6.0"},
+      # {:surface_heroicons, "~> 0.5.2"},
+      {:surface, "~> 0.6", override: true}
     ]
   end
 

@@ -4,8 +4,12 @@ defmodule TrafficWeb.Pages.Map do
 
   data width, :integer, default: 1000
   data height, :integer, default: 510
+  # data width, :integer, default: 1000
+  # data height, :integer, default: 510
   data road, :map, default: Traffic.Network.Road.preloaded()
-  @rate 10
+  # @rate round(10)
+  # @rate round(1000 / 60)
+  @rate round(1000 / 24)
 
   @impl true
   def mount(_params, session, socket) do
@@ -40,10 +44,10 @@ defmodule TrafficWeb.Pages.Map do
     <svg
       x="0px"
       y="0px"
-      width={@width}
-      height={@height}
+      width={200}
+      height={102}
       viewBox={"0 0 #{@width} #{@height}"}
-      enable-background={"new 0 0 #{@width } 510"}
+      enable-background={"new 0 0 #{@width} 510"}
       xml:space="preserve"
     >
       <defs>

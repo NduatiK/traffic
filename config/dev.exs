@@ -26,6 +26,7 @@ config :traffic, TrafficWeb.Endpoint,
   watchers: [
     # Start the esbuild watcher by calling Esbuild.install_and_run(:default, args)
     esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]}
+    # esbuild: {Esbuild, :install_and_run, [:default, ~w(--minify)]}
   ]
 
 # ## SSL Support
@@ -54,11 +55,12 @@ config :traffic, TrafficWeb.Endpoint,
 
 # Watch static and templates for browser reloading.
 config :traffic, TrafficWeb.Endpoint,
+  reloadable_compilers: [:gettext, :elixir, :surface],
   live_reload: [
     patterns: [
       ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
-      ~r"lib/traffic_web/(live|views)/.*(ex)$",
+      ~r"lib/traffic_web/(live|views|components)/.*(ex|sface|js)$",
       ~r"lib/traffic_web/templates/.*(eex)$"
     ]
   ]

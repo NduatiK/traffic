@@ -21,7 +21,6 @@ defmodule TrafficWeb.Components.Lane do
     ~F"""
     <g transform-origin="center" transform={if @flip, do: "scale(-1, 1)"}>
       {#for {vehicles, index} <- Enum.with_index(@lanes)}
-
         {#if index + 1 != @lanes |> Enum.count()}
           <LaneDivider
             id={Integer.to_string(index) <> @direction}
@@ -32,14 +31,14 @@ defmodule TrafficWeb.Components.Lane do
           />
         {/if}
         {#for {vehicle, position} <- vehicles}
-        <Vehicle
-          id={vehicle.id}
-          flip={@flip}
-          x={position / @road_length * @width}
-          y={@lane_width * index - 1 + @offset}
-          color="orange"
-        />
-      {/for}
+          <Vehicle
+            id={vehicle.id}
+            flip={@flip}
+            x={position / @road_length * @width}
+            y={@lane_width * index - 1 + @offset}
+            color="orange"
+          />
+        {/for}
       {/for}
     </g>
     """

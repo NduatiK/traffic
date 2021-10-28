@@ -11,25 +11,27 @@ defmodule Traffic.Network.Junction do
     field :roads, %{}, default: %{}
     # field :roads, map(Road.name(), [{Road.t(), Road.road_end()}]), default: %{}
 
+    field :x, integer(), default: 0
+    field :y, integer(), default: 0
     field :vehicle_in_junction, %{}, default: %{}
   end
 
   def invert(:right), do: :left
   def invert(:left), do: :right
 
-  def step(%Junction{} = junction) do
+  def step(%Junction{} = junction, roads) do
     # TODO: should pass through junction
     # TODO: block if junction blocked
     # TODO: block return info on if has space
 
     road_names =
-      junction.roads
+      roads
       |> Enum.map(fn {name, %{connection: connection}} ->
         {name, connection}
       end)
 
     roads =
-      junction.roads
+      roads
       |> Enum.map(fn {road_end, %{road: road, connection: connection, light: light} = r} ->
         {road_end,
          %{r | road: Road.step(road, invert(connection), [{connection, light}], road_names)}}
@@ -74,7 +76,7 @@ defmodule Traffic.Network.Junction do
         | roads: roads,
           vehicle_in_junction: vehicle_in_junction
       },
-      %{}
+      roads
     }
   end
 

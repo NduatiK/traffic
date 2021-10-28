@@ -15,7 +15,10 @@ defmodule Traffic.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: Traffic.PubSub},
       # Start the Endpoint (http/https)
-      TrafficWeb.Endpoint
+      TrafficWeb.Endpoint,
+      # Start a network server
+      {Traffic.Network.Server, []}
+
       # Start a worker by calling: Traffic.Worker.start_link(arg)
       # {Traffic.Worker, arg}
     ]

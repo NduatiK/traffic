@@ -384,23 +384,8 @@ R.recompile()
 
 defmodule GraphPlay do
   def step(graph) do
-    # Update road
-    graph
-    |> RoadGraph.junctions()
-    |> Enum.map(fn junction ->
-      Agent.get_and_update(junction, fn junction ->
-        # roads = RoadGraph.roads(graph, junction)
-        # |> Enum.map()
-
-        # junction
-        # |> Junction.step()
-
-        # new_road = Road.step(road, [])
-        # {new_road, new_road}
-        {junction, junction}
-      end)
-    end)
-  end
+  
+    
 end
 ```
 

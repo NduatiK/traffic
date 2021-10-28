@@ -1,19 +1,25 @@
 defmodule TrafficWeb.Pages.Map do
   use TrafficWeb, :surface_view_helpers
-  alias TrafficWeb.Components.{Road}
+  alias TrafficWeb.Components.{Road, RoadNetwork, Junction}
 
   data width, :integer, default: 1000
   data height, :integer, default: 510
+  data padding, :integer, default: 50
   # data width, :integer, default: 1000
   # data height, :integer, default: 510
-  data road, :map, default: Traffic.Network.Road.preloaded()
-  # @rate round(10)
-  # @rate round(1000 / 60)
+  data graph, :map
+
   @rate round(1000 / 24)
+  # @rate round(48000 / 24)
 
   @impl true
   def mount(_params, session, socket) do
     if connected?(socket), do: Process.send_after(self(), :tick, @rate)
+
+    socket =
+      socket
+      |> assign(graph: Traffic.Network.Server.get(Traffic.Network.Server))
+
     {:ok, socket}
   end
 
@@ -33,27 +39,29 @@ defmodule TrafficWeb.Pages.Map do
   @impl true
   def handle_info(:tick, socket) do
     Process.send_after(self(), :tick, @rate)
-    road = Traffic.Network.Road.step(socket.assigns.road, []).road
-    socket = assign(socket, :road, road)
+
+    send_update(RoadNetwork, id: "network")
+
+    # socket = assign(socket, :road, road)
     {:noreply, socket}
   end
 
   @impl true
   def render(assigns) do
+    # enable-background={"new 0 0 #{@width} 510"}
     ~F"""
     <svg
       x="0px"
-      y="0px"
-      width={200}
-      height={102}
-      viewBox={"0 0 #{@width} #{@height}"}
-      enable-background={"new 0 0 #{@width} 510"}
+      y="0px":
+      width={@width + @padding * 2}
+      height={@height + @padding * 2}
+      viewBox={"#{-@padding} #{-@padding} #{@width + @padding} #{@height + @padding}"}
       xml:space="preserve"
     >
       <defs>
         {{:safe, TrafficWeb.Components.Vehicle.mustang()}}
       </defs>
-      <Road id="1" road={@road} lane_width={30} />
+      <RoadNetwork id="network" network={@graph} />
     </svg>
     """
   end

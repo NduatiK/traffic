@@ -1,5 +1,6 @@
 defmodule Traffic.Network.Graph do
   alias Graph
+
   @moduledoc """
   Tag each item with grid data
   for plotting.
@@ -73,4 +74,23 @@ defmodule Traffic.Network.Graph do
   def roads(graph), do: Graph.edges(graph)
   def roads(graph, junction), do: Graph.edges(graph, junction)
 
+  def left_junction(%Graph.Edge{v1: junction}), do: junction
+  def right_junction(%Graph.Edge{v2: junction}), do: junction
+  def side_of_connection(junction, %Graph.Edge{v2: junction}), do: :right
+  def side_of_connection(junction, %Graph.Edge{v1: junction}), do: :left
+
+  def junction_roads(graph, junction) do
+    graph
+    |> roads(junction)
+    |> Enum.reduce(%{}, fn road, acc ->
+      side =
+        junction
+        |> side_of_connection(road)
+
+      acc
+      |> Map.update(side, [road], fn existing_values ->
+        existing_values ++ [road]
+      end)
+    end)
+  end
 end

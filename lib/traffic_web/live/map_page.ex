@@ -2,8 +2,8 @@ defmodule TrafficWeb.Pages.Map do
   use TrafficWeb, :surface_view_helpers
   alias TrafficWeb.Components.{Road, RoadNetwork, Junction}
 
-  data width, :integer, default: 1000
-  data height, :integer, default: 510
+  data width, :integer, default: 2000
+  data height, :integer, default: 1010
   data padding, :integer, default: 50
   # data width, :integer, default: 1000
   # data height, :integer, default: 510

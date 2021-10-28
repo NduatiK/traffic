@@ -3,8 +3,8 @@ defmodule TrafficWeb.Components.RoadNetwork do
 
   alias TrafficWeb.Components.{Vehicle, Lane, LaneDivider, Road, Junction}
 
-  data width, :integer, default: 1000
-  data height, :integer, default: 510
+  data width, :integer, default: 2000
+  data height, :integer, default: 1010
   data padding, :integer, default: 50
 
   prop network, :map
@@ -58,8 +58,9 @@ defmodule TrafficWeb.Components.RoadNetwork do
     <Junction id={id} junction={junction} />
     {/for}
     {#for {road, id} <- Enum.with_index(@roads) }
-    <Road id={"road-#{id}"} road={road.road} from={road.from} to={road.to}lane_width={30} />
+    <Road id={"road-#{id}"} road={road.road} from={road.from} to={road.to}lane_width={30} x={50} y={20} />
     {/for}
+    <circle cx="50" cy="20" fill="blue" r="10"/>
     </svg>
     """
 

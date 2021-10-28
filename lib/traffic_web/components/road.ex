@@ -7,6 +7,9 @@ defmodule TrafficWeb.Components.Road do
   prop(road, :map)
   prop(from, :tuple)
   prop(to, :tuple)
+  prop(x, :integer, default: 0)
+  prop(y, :integer, default: 0)
+
   data(height, :integer)
   prop(lane_width, :integer)
 
@@ -29,15 +32,10 @@ defmodule TrafficWeb.Components.Road do
 
   @impl true
   def render(assigns) do
-    # height={(Enum.count(@road.right) + Enum.count(@road.left)) * (@lane_width + 1)}
-    # <g width={@road.length * 100} height={@height}>
     ~F"""
     <g
-    width={@road.length * 100}
-      height={@height}
       version="1.1"
-      transform-origin="0% 50%"
-      transform="rotate(-10)"
+      transform={"translate(#{@x}, #{@y - @height/2}) rotate(40, 0, #{@height/2})"}
       >
       <LaneDivider
         id={"top" <> Atom.to_string(@road.name)}

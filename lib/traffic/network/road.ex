@@ -22,6 +22,14 @@ defmodule Traffic.Network.Road do
     {Enum.count(road.right), Enum.count(road.left)}
   end
 
+  def scale_speed() do
+    Application.get_env(:traffic, :scale_speed, 110)
+  end
+
+  def set_scale_speed(speed) do
+    Application.put_env(:traffic, :scale_speed, speed)
+  end
+
   def preloaded(name \\ :unique_road) do
     %Road{
       name: name,
@@ -63,16 +71,16 @@ defmodule Traffic.Network.Road do
     }
   end
 
-  def step(road, open_exits \\ [], road_names)
+  def step(road, lane, open_exits \\ [], road_names)
 
-  def step(%{road: %Road{} = road}, open_exits, road_names) do
+  def step(%{road: %Road{} = road}, lane, open_exits, road_names) do
     step(road, open_exits, road_names)
   end
 
-  def step(%Road{} = road, open_exits, road_names) do
+  def step(%Road{} = road, lane, open_exits, road_names) do
     %{road: road, left: [], right: []}
-    |> update_lanes(:left, Enum.member?(open_exits, {:left, :green}), road_names)
-    |> update_lanes(:right, Enum.member?(open_exits, {:right, :green}), road_names)
+    |> update_lanes(:left, lane, Enum.member?(open_exits, {:left, :green}), road_names)
+    |> update_lanes(:right, lane, Enum.member?(open_exits, {:right, :green}), road_names)
   end
 
   def join_road(%Road{} = road, direction, nil) do
@@ -117,7 +125,12 @@ defmodule Traffic.Network.Road do
   def to_exit(:left), do: :left
   def to_exit(:right), do: :right
 
-  def update_lanes(%{road: road} = data, lane_name, can_exit, road_names) do
+  def update_lanes(data, lane_name, lane_to_step, _, _)
+      when lane_name == lane_to_step do
+    data
+  end
+
+  def update_lanes(%{road: road} = data, lane_name, lane_to_step, can_exit, road_names) do
     {lanes, exits} =
       road
       |> Map.get(lane_name)
@@ -157,9 +170,8 @@ defmodule Traffic.Network.Road do
     |> Map.put(to_exit(lane_name), exits)
   end
 
-  @scale_speed 110
   defp move_forward({vehicle, location}, nil, road, can_exit, road_names, lane_index) do
-    next_location = location + vehicle.speed / @scale_speed
+    next_location = location + vehicle.speed / scale_speed()
 
     next_location =
       if can_exit,
@@ -191,11 +203,11 @@ defmodule Traffic.Network.Road do
     next_location =
       cond do
         leader_pos - location > @visibility_thresh ->
-          location + vehicle.speed / @scale_speed
+          location + vehicle.speed / scale_speed()
 
         true ->
           # No need to handle anything
-          location + vehicle.speed / @scale_speed
+          location + vehicle.speed / scale_speed()
       end
 
     next_location = min(leader_pos - vehicle_length(), next_location)

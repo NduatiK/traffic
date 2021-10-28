@@ -31,7 +31,8 @@ defmodule Traffic.Network.Junction do
     roads =
       junction.roads
       |> Enum.map(fn {road_end, %{road: road, connection: connection, light: light} = r} ->
-        {road_end, %{r | road: Road.step(road, [{connection, light}], road_names)}}
+        {road_end,
+         %{r | road: Road.step(road, invert(connection), [{connection, light}], road_names)}}
       end)
       |> Enum.into(%{})
 
@@ -67,10 +68,13 @@ defmodule Traffic.Network.Junction do
       |> Enum.map(&update_road(&1, vehicles_joining_from_junction))
       |> Enum.into(%{})
 
-    %{
-      junction
-      | roads: roads,
-        vehicle_in_junction: vehicle_in_junction
+    {
+      %{
+        junction
+        | roads: roads,
+          vehicle_in_junction: vehicle_in_junction
+      },
+      %{}
     }
   end
 

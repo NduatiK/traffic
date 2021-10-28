@@ -278,10 +278,12 @@ junction
 ```elixir
 R.recompile()
 
+Traffic.Network.Road.set_scale_speed(1)
+
 junction =
   0..50
   |> Enum.reduce(junction, fn i, junction ->
-    junction = Junction.step(junction)
+    {junction, _} = Junction.step(junction)
 
     :timer.sleep(400)
     IO.inspect(junction)
@@ -349,6 +351,58 @@ junction
 <br />
 
 <br />
+
+## ⛓🥨❄🔱➰ Graphs
+
+## Section
+
+The graph sends out a pulse to each road which in turn sends out a pulse to all the __*
+
+lanes*__ feeding into it.
+
+The pulse is received by the lanes to prevent "double spending" on the pulse.
+
+This also allows the junction to let its roads know its current light.
+
+```elixir
+alias Graph
+alias Traffic.Network.Graph, as: RoadGraph
+
+graph = Traffic.Network.build_network()
+```
+
+```elixir
+R.recompile()
+[j1, j2] = RoadGraph.junctions(graph)
+{RoadGraph.roads(graph, j1), j1}
+
+# Graph.edges()
+```
+
+```elixir
+# RoadGraph.junctions(graph)
+
+defmodule GraphPlay do
+  def step(graph) do
+    # Update road
+    graph
+    |> RoadGraph.junctions()
+    |> Enum.map(fn junction ->
+      Agent.get_and_update(junction, fn junction ->
+        # roads = RoadGraph.roads(graph, junction)
+        # |> Enum.map()
+
+        # junction
+        # |> Junction.step()
+
+        # new_road = Road.step(road, [])
+        # {new_road, new_road}
+        {junction, junction}
+      end)
+    end)
+  end
+end
+```
 
 ## Roadmap
 

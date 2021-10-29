@@ -19,7 +19,9 @@ defmodule TrafficWeb.Components.Lane do
 
   def render(assigns) do
     ~F"""
-    <g transform-origin="center" transform={if @flip, do: "scale(-1, 1)"}>
+    <svg
+    width={@width}
+    transform-origin="center" transform={if @flip, do: "scale(-1, 1)"}>
       {#for {vehicles, index} <- Enum.with_index(@lanes)}
         {#if index + 1 != @lanes |> Enum.count()}
           <LaneDivider
@@ -40,7 +42,7 @@ defmodule TrafficWeb.Components.Lane do
           />
         {/for}
       {/for}
-    </g>
+    </svg>
     """
   end
 end

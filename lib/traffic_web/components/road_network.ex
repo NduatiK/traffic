@@ -53,6 +53,8 @@ defmodule TrafficWeb.Components.RoadNetwork do
     height={@height + @padding * 2}
     viewBox={"#{-@padding} #{-@padding} #{@width + @padding} #{@height + @padding}"}
     xml:space="preserve"
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
     >
     {#for {junction, id} <- Enum.with_index(@junctions)}
     <Junction id={id} junction={junction} />

@@ -35,13 +35,13 @@ defmodule Traffic.Network.Road do
       name: name,
       length: 10,
       right: [
-        # [
-        #   {Vehicle.random(), 0},
-        #   {Vehicle.random(), 3},
-        #   {Vehicle.random(), 5},
-        #   {Vehicle.random(), 6},
-        #   {Vehicle.random(), 9}
-        # ],
+        [
+          {Vehicle.random(), 0},
+          {Vehicle.random(), 3},
+          {Vehicle.random(), 5},
+          {Vehicle.random(), 6},
+          {Vehicle.random(), 9}
+        ],
         [
           {Vehicle.random(), 0},
           {Vehicle.random(), 3},

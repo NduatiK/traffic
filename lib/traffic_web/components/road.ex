@@ -11,7 +11,7 @@ defmodule TrafficWeb.Components.Road do
   prop(y, :integer, default: 0)
 
   data(height, :integer)
-  data(angle, :integer, default: 40)
+  data(angle, :integer, default: 20)
   # data(angle, :integer, default: 0)
   prop(lane_width, :integer)
 
@@ -37,7 +37,7 @@ defmodule TrafficWeb.Components.Road do
     ~F"""
     <g
     transform={"translate(#{@x}, #{@y - @height/2}) rotate(#{@angle}, 0, #{@height/2})"}
-    
+
       >
       <LaneDivider
         id={"top" <> Atom.to_string(@road.name)}

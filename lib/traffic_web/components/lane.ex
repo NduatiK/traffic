@@ -19,9 +19,7 @@ defmodule TrafficWeb.Components.Lane do
 
   def render(assigns) do
     ~F"""
-    <svg
-    width={@width}
-    transform-origin={"#{@width/2} 0"} transform={if @flip, do: "scale(-1, 1)"}>
+    <svg width={@width} transform-origin={"#{@width / 2} 0"} transform={if @flip, do: "scale(-1, 1)"}>
       {#for {vehicles, index} <- Enum.with_index(@lanes)}
         {#if index + 1 != @lanes |> Enum.count()}
           <LaneDivider
@@ -31,8 +29,7 @@ defmodule TrafficWeb.Components.Lane do
             lane_width={@lane_width}
             offset={@offset}
           />
-        {/if}
-        {#for {vehicle, position} <- vehicles}
+        {/if} {#for {vehicle, position} <- vehicles}
           <Vehicle
             id={vehicle.id}
             flip={@flip}

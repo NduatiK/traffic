@@ -63,8 +63,5 @@ defmodule TrafficWeb.Components.RoadNetwork do
       {/for} <circle cx="50" cy="20" fill="blue" r="10" />
     </svg>
     """
-
-    # <Junction id="1" junction={@junction} />
-    # <Junction id="2" junction={@junction_2} />
   end
 end

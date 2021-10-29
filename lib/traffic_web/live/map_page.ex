@@ -52,7 +52,7 @@ defmodule TrafficWeb.Pages.Map do
     ~F"""
     <svg
       x="0px"
-      y="0px":
+      y="0px"
       width={@width + @padding * 2}
       height={@height + @padding * 2}
       viewBox={"#{-@padding} #{-@padding} #{@width + @padding} #{@height + @padding}"}

@@ -35,10 +35,7 @@ defmodule TrafficWeb.Components.Road do
   @impl true
   def render(assigns) do
     ~F"""
-    <g
-    transform={"translate(#{@x}, #{@y - @height/2}) rotate(#{@angle}, 0, #{@height/2})"}
-
-      >
+    <g transform={"translate(#{@x}, #{@y - @height / 2}) rotate(#{@angle}, 0, #{@height / 2})"}>
       <LaneDivider
         id={"top" <> Atom.to_string(@road.name)}
         width={@road.length * 100}
@@ -46,8 +43,7 @@ defmodule TrafficWeb.Components.Road do
         stroke={@lane_color}
         stroke_width="5"
         solid
-      />
-      <Lane
+      /> <Lane
         width={@road.length * 100}
         road_length={@road.length}
         lanes={@road.right}
@@ -55,8 +51,7 @@ defmodule TrafficWeb.Components.Road do
         lane_width={@lane_width}
         id={Atom.to_string(@road.name) <> "right"}
         flip
-      />
-      <LaneDivider
+      /> <LaneDivider
         id={"middle" <> Atom.to_string(@road.name)}
         width={@road.length * 100}
         lane_width={@lane_width}
@@ -64,8 +59,7 @@ defmodule TrafficWeb.Components.Road do
         stroke={@lane_color}
         stroke_width="2.5"
         solid
-      />
-      <Lane
+      /> <Lane
         width={@road.length * 100}
         road_length={@road.length}
         lanes={@road.left}
@@ -73,8 +67,7 @@ defmodule TrafficWeb.Components.Road do
         lane_width={@lane_width}
         id={Atom.to_string(@road.name) <> "left"}
         offset={Enum.count(@road.right) * (@lane_width + 1)}
-      />
-      <LaneDivider
+      /> <LaneDivider
         id={"bottom" <> Atom.to_string(@road.name)}
         width={@road.length * 100}
         index={-1}

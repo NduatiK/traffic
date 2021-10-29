@@ -28,7 +28,7 @@ defmodule TrafficWeb.Components.Vehicle do
   def render(assigns) do
     ~F"""
     <svg x={round(@x)} y={round(@y)}>
-    <svg width={@width} height={@height} viewBox="0 0 959 452" style="color: orange">
+      <svg width={@width} height={@height} viewBox="0 0 959 452" style="color: orange">
         <use xlink:href="#mustang" />
       </svg>s
     </svg>

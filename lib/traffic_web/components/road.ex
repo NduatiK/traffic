@@ -37,7 +37,7 @@ defmodule TrafficWeb.Components.Road do
     ~F"""
     <g
     transform={"translate(#{@x}, #{@y - @height/2}) rotate(#{@angle}, 0, #{@height/2})"}
-
+    
       >
       <LaneDivider
         id={"top" <> Atom.to_string(@road.name)}

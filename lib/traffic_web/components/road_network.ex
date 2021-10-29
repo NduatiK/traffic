@@ -60,7 +60,7 @@ defmodule TrafficWeb.Components.RoadNetwork do
     <Junction id={id} junction={junction} />
     {/for}
     {#for {road, id} <- Enum.with_index(@roads) }
-    <Road id={"road-#{id}"} road={road.road} from={road.from} to={road.to}lane_width={30} x={50} y={20} />
+    <Road id={"road-#{id}"} road={road.road} from={road.from} to={road.to} lane_width={30} x={50} y={20} />
     {/for}
     <circle cx="50" cy="20" fill="blue" r="10"/>
     </svg>

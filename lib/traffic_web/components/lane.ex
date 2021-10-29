@@ -21,7 +21,7 @@ defmodule TrafficWeb.Components.Lane do
     ~F"""
     <svg
     width={@width}
-    transform-origin="center" transform={if @flip, do: "scale(-1, 1)"}>
+    transform-origin={"#{@width/2} 0"} transform={if @flip, do: "scale(-1, 1)"}>
       {#for {vehicles, index} <- Enum.with_index(@lanes)}
         {#if index + 1 != @lanes |> Enum.count()}
           <LaneDivider

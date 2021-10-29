@@ -11,6 +11,8 @@ defmodule TrafficWeb.Components.Road do
   prop(y, :integer, default: 0)
 
   data(height, :integer)
+  data(angle, :integer, default: 40)
+  # data(angle, :integer, default: 0)
   prop(lane_width, :integer)
 
   data lane_color, :string, default: "#c0c0c0"
@@ -34,8 +36,8 @@ defmodule TrafficWeb.Components.Road do
   def render(assigns) do
     ~F"""
     <g
-      version="1.1"
-      transform={"translate(#{@x}, #{@y - @height/2}) rotate(40, 0, #{@height/2})"}
+    transform={"translate(#{@x}, #{@y - @height/2}) rotate(#{@angle}, 0, #{@height/2})"}
+
       >
       <LaneDivider
         id={"top" <> Atom.to_string(@road.name)}
@@ -72,7 +74,6 @@ defmodule TrafficWeb.Components.Road do
         id={Atom.to_string(@road.name) <> "left"}
         offset={Enum.count(@road.right) * (@lane_width + 1)}
       />
-      --}
       <LaneDivider
         id={"bottom" <> Atom.to_string(@road.name)}
         width={@road.length * 100}

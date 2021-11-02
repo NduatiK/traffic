@@ -1,18 +1,19 @@
 defmodule TrafficWeb.Components.Vehicle do
   use Surface.LiveComponent
-
+  alias __MODULE__.Helpers.{Mustang, Bus}
   prop(class, :string, default: "items-center")
   prop(flip, :boolean, default: false)
   prop(color, :string, default: "blue")
   prop(x, :integer, default: 0)
   prop(y, :integer, default: 0)
-  prop(height, :integer, default: 30)
-  prop(width, :integer, default: 30)
+  prop(breadth, :integer, default: 30)
+  prop(length, :integer, default: 30)
+  prop(vehicle, :map)
 
   # def render(assigns) do
   #   ~F"""
   #   <svg x={round(@x)} y={round(@y)}>
-  #     <svg width={@width} height={@height} viewBox="0 0 30 10" style="color: orange">
+  #     <svg width={@length} height={@breadth} viewBox="0 0 30 10" style="color: orange">
   #       <use xlink:href="#mustang" />
   #     </svg>s
   #   </svg>
@@ -28,18 +29,16 @@ defmodule TrafficWeb.Components.Vehicle do
   def render(assigns) do
     ~F"""
     <svg x={round(@x)} y={round(@y)}>
-      <svg width={@width} height={@height} viewBox="0 0 959 452" style="color: orange">
-        <use xlink:href="#mustang" />
-      </svg>s
+      <Mustang breadth={@breadth} length={@length} color={render_speed(@vehicle)}/>
     </svg>
     """
   end
 
-  mustang_path = Path.join(__DIR__, "./muscle_car.svg")
-
-  @mustang_svg File.read!(mustang_path)
-
-  def mustang() do
-    @mustang_svg
+  def render_speed(vehicle) do
+    cond do
+      vehicle.speed > 2 -> "gray"
+      vehicle.speed > 1 -> "orange"
+      true -> "green"
+    end
   end
 end

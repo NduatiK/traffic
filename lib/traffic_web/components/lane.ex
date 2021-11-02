@@ -32,6 +32,7 @@ defmodule TrafficWeb.Components.Lane do
         {/if} {#for {vehicle, position} <- vehicles}
           <Vehicle
             id={vehicle.id}
+            vehicle={vehicle}
             flip={@flip}
             x={position / @road_length * @width}
             y={@lane_width * index - 1 + @offset}

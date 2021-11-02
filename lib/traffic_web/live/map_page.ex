@@ -46,6 +46,7 @@ defmodule TrafficWeb.Pages.Map do
     {:noreply, socket}
   end
 
+  alias TrafficWeb.Components.Vehicle.Helpers, as: Vehicles
   @impl true
   def render(assigns) do
     # enable-background={"new 0 0 #{@width} 510"}
@@ -59,7 +60,8 @@ defmodule TrafficWeb.Pages.Map do
       xml:space="preserve"
     >
       <defs>
-        {{:safe, TrafficWeb.Components.Vehicle.mustang()}}
+        {{:safe, Vehicles.Mustang.svg()}}
+        {{:safe, Vehicles.Bus.svg()}}
       </defs>
       <RoadNetwork id="network" network={@graph} />
     </svg>

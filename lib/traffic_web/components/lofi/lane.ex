@@ -1,18 +1,18 @@
-defmodule TrafficWeb.Components.Lane do
+defmodule TrafficWeb.Components.Lofi.Lane do
   use Surface.LiveComponent
-  alias TrafficWeb.Components.LaneDivider
-  alias TrafficWeb.Components.Vehicle
-  alias TrafficWeb.Components.Lane
+  alias TrafficWeb.Components.Lofi.LaneDivider
+  alias TrafficWeb.Components.Lofi.Vehicle
+  alias TrafficWeb.Components.Lofi.Lane
 
   prop(class, :string, default: "items-center")
+  prop(road_name, :string)
   prop(lanes, :list)
   prop(width, :integer)
   prop(lane_width, :integer)
   prop(road_length, :integer)
   prop(flip, :boolean, default: false)
   prop(offset, :integer, default: 0)
-  prop(direction, :string, default: 0)
-  prop(road_name, :string, default: 0)
+  prop(direction, :string, default: "0")
 
   slot(default)
 
@@ -22,21 +22,13 @@ defmodule TrafficWeb.Components.Lane do
     ~F"""
     <svg width={@width} transform-origin={"#{@width / 2} 0"} transform={if @flip, do: "scale(-1, 1)"}>
       {#for {vehicles, index} <- Enum.with_index(@lanes)}
-        {#if index + 1 != @lanes |> Enum.count()}
-          <LaneDivider
-            id={@road_name  <> Integer.to_string(index) <> @direction}
-            width={@width}
-            index={index}
-            lane_width={@lane_width}
-            offset={@offset}
-          />
-        {/if} {#for {vehicle, position} <- vehicles}
+        {#for {vehicle, position} <- vehicles}
           <Vehicle
             id={vehicle.id}
             vehicle={vehicle}
             flip={@flip}
             x={position / @road_length * @width}
-            y={@lane_width * index - 1 + @offset}
+            y={3 + @offset + index * 2}
             color="orange"
           />
         {/for}

@@ -14,7 +14,7 @@ defmodule Traffic.Vehicles.DriverProfile do
   end
 
   def default() do
-  %DriverProfile{
+    %DriverProfile{
       mean_speed: 40,
       initial_acceleration: 50 / 15
     }
@@ -29,9 +29,66 @@ defmodule Traffic.Vehicles.DriverProfile do
 
   def random(mean, std) do
     %DriverProfile{
-      mean_speed: :rand.normal(mean, std),
+      mean_speed: gauss(mean, std),
       speed_std_dev: std,
       initial_acceleration: 50 / 15
     }
   end
+
+  def random do
+    [
+      {&tailgater/0, 0.5},
+      {&planner/0, 0.5},
+      {&flow_conformist/0, 0.5},
+      {&extremist/0, 0.5},
+      {&ultra_conservative/0, 0.5}
+    ]
+  end
+
+  def tailgater do
+    %DriverProfile{
+      mean_speed: gauss(50, 10),
+      speed_std_dev: 10,
+      initial_acceleration: 50 / 15,
+      distance_from_lead: 1
+    }
+  end
+
+  def planner do
+    %DriverProfile{
+      mean_speed: gauss(50, 10),
+      speed_std_dev: 10,
+      initial_acceleration: 50 / 15,
+      distance_from_lead: 3
+    }
+  end
+
+  def flow_conformist do
+    %DriverProfile{
+      mean_speed: gauss(40, 5),
+      speed_std_dev: 5,
+      initial_acceleration: 50 / 15,
+      distance_from_lead: 3
+    }
+  end
+
+  def extremist do
+    %DriverProfile{
+      mean_speed: gauss(40, 20),
+      speed_std_dev: 20,
+      initial_acceleration: 50 / 15,
+      distance_from_lead: 3
+    }
+  end
+
+  def ultra_conservative do
+    %DriverProfile{
+      mean_speed: gauss(40, 20),
+      speed_std_dev: 20,
+      initial_acceleration: 50 / 15,
+      distance_from_lead: 3
+    }
+  end
+
+  def gauss(mean, std), do: max(0, :rand.normal(mean, std))
 end

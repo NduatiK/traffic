@@ -1,6 +1,6 @@
-defmodule TrafficWeb.Pages.Map do
+defmodule TrafficWeb.Pages.LofiMap do
   use TrafficWeb, :surface_view_helpers
-  alias TrafficWeb.Components.{Road, RoadNetwork, Junction}
+  alias TrafficWeb.Components.Lofi.{Road, RoadNetwork, Junction}
 
   data width, :integer, default: 2000
   data height, :integer, default: 1010

@@ -32,7 +32,7 @@ defmodule Traffic.Vehicles.Vehicle do
   end
 
   def random() do
-    speed = round(10 * :rand.uniform_real() * 2) / 10 + 0.1
+    speed = round(10 * (:rand.uniform_real() * 2)) / 10 + 0.1
     id = :rand.uniform(100_000)
 
     %Vehicle{

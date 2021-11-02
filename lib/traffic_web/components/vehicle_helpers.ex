@@ -15,9 +15,9 @@ defmodule TrafficWeb.Components.Vehicle.Helpers do
 
     def render(assigns) do
       ~F"""
-        <svg width={@length} height={@breadth} viewBox="0 0 959 452" style={"color: #{@color}"}>
-          <use xlink:href="#mustang" />
-        </svg>
+      <svg width={@length} height={@breadth} viewBox="0 0 959 452" style={"color: #{@color}"}>
+        <use xlink:href="#mustang" />
+      </svg>
       """
     end
   end
@@ -41,9 +41,9 @@ defmodule TrafficWeb.Components.Vehicle.Helpers do
 
     def render(assigns) do
       ~F"""
-        <svg width={@length} height={@breadth} viewBox="0 0 2889 771" style={"color: #{@color}"}>
-          <use xlink:href="#bus" />
-        </svg>
+      <svg width={@length} height={@breadth} viewBox="0 0 2889 771" style={"color: #{@color}"}>
+        <use xlink:href="#bus" />
+      </svg>
       """
     end
   end

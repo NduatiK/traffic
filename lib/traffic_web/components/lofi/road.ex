@@ -1,17 +1,18 @@
-defmodule TrafficWeb.Components.Road do
+defmodule TrafficWeb.Components.Lofi.Road do
   use Surface.LiveComponent
 
-  alias TrafficWeb.Components.{Vehicle, Lane, LaneDivider}
+  alias TrafficWeb.Components.Lofi.{Vehicle, Lane, LaneDivider}
 
   prop(class, :string, default: "items-center")
   prop(road, :map)
   prop(from, :tuple)
   prop(to, :tuple)
+  prop(x, :integer, default: 0)
+  prop(y, :integer, default: 0)
 
   data(height, :integer)
+  data(length, :integer, default: 200)
   data(angle, :integer, default: 20)
-  data(length, :integer)
-
   # data(angle, :integer, default: 0)
   prop(lane_width, :integer)
 
@@ -22,11 +23,8 @@ defmodule TrafficWeb.Components.Road do
   def update(assigns, socket) do
     socket =
       socket
-      |> assign(
-        height:
-          (Enum.count(assigns.road.right) + Enum.count(assigns.road.left)) *
-            (assigns.lane_width + 1)
-      )
+      |> assign(assigns)
+      |> assign(height: 3)
       |> assign(
         angle:
           :math.atan2(
@@ -42,7 +40,6 @@ defmodule TrafficWeb.Components.Road do
               :math.pow(elem(assigns.from, 0) - elem(assigns.to, 0), 2)
           )
       )
-      |> assign(assigns)
 
     {:ok, socket}
   end
@@ -50,15 +47,9 @@ defmodule TrafficWeb.Components.Road do
   @impl true
   def render(assigns) do
     ~F"""
-    <g transform={"translate(#{elem(assigns.to, 0)}, #{elem(assigns.to, 1) - @height / 2}) rotate(#{@angle}, 0, #{@height / 2})"}>
-      <LaneDivider
-        id={"top" <> Atom.to_string(@road.name)}
-        width={@length}
-        lane_width={@lane_width}
-        stroke={@lane_color}
-        stroke_width="5"
-        solid
-      /> <Lane
+    <g transform={"translate(#{elem(assigns.to, 0)}, #{elem(assigns.to, 1) - @height / 2}) rotate(#{@angle}, 0, #{@height / 2})"}
+    overflow="visible" >
+      <Lane
         width={@length}
         road_length={@road.length}
         lanes={@road.right}
@@ -67,32 +58,18 @@ defmodule TrafficWeb.Components.Road do
         id={Atom.to_string(@road.name) <> "right"}
         flip
         road_name={Atom.to_string(@road.name)}
-        /> <LaneDivider
-        id={"middle" <> Atom.to_string(@road.name)}
-        width={@length}
-        lane_width={@lane_width}
-        offset={Enum.count(@road.right) * @lane_width}
-        stroke={@lane_color}
-        stroke_width="2.5"
-        solid
-        /> <Lane
+        offset={1}
+      />
+      <LaneDivider width={@length} lane_width={@lane_width} stroke_width={2} solid offset={4} />
+      <Lane
         width={@length}
         road_length={@road.length}
         lanes={@road.left}
+        road_name={Atom.to_string(@road.name)}
         direction="left"
         lane_width={@lane_width}
         id={Atom.to_string(@road.name) <> "left"}
-        offset={Enum.count(@road.right) * (@lane_width + 1)}
-        road_name={Atom.to_string(@road.name)}
-        /> <LaneDivider
-        id={"bottom" <> Atom.to_string(@road.name)}
-        width={@length}
-        index={-1}
-        lane_width={@lane_width}
-        offset={@height}
-        stroke={@lane_color}
-        stroke_width="5"
-        solid
+        offset={8}
       />
     </g>
     """

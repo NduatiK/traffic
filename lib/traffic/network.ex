@@ -5,46 +5,42 @@ defmodule Traffic.Network do
     Agent.start_link(fn -> Road.preloaded(name) end, name: name)
   end
 
+  def start_junction(x, y) do
+    Agent.start_link(fn ->
+      %Junction{
+        roads: %{},
+        x: x,
+        y: y
+      }
+    end)
+  end
+
   def build_network() do
     {:ok, road_1} = start_road(:road_1)
-    # {:ok, road_2} = Agent.start_link(fn -> Road.preloaded(:road_2) end)
-    # {:ok, road_3} = Agent.start_link(fn -> Road.preloaded(:road_3) end)
+    {:ok, road_2} = start_road(:road_2)
+    {:ok, road_3} = start_road(:road_3)
+    {:ok, road_4} = start_road(:road_4)
+    {:ok, road_5} = start_road(:road_5)
+    {:ok, road_6} = start_road(:road_6)
 
-    {:ok, junction_1} =
-      Agent.start_link(fn ->
-        %Junction{
-          roads: %{},
-          x: 0,
-          y: 0
-        }
-      end)
-
-    {:ok, junction_2} =
-      Agent.start_link(fn ->
-        %Junction{
-          roads: %{},
-          x: 500,
-          y: 0
-        }
-      end)
-
-    # {:ok, junction_3} =
-    #   Agent.start_link(fn ->
-    #     %Junction{
-    #       roads: %{},
-    #       x: 0,
-    #       y: 200
-    #     }
-    #   end)
+    {:ok, junction_1} = start_junction(100, 100)
+    {:ok, junction_2} = start_junction(500, 100)
+    {:ok, junction_3} = start_junction(700, 300)
+    {:ok, junction_4} = start_junction(500, 500)
+    {:ok, junction_5} = start_junction(100, 500)
 
     Graph.create()
     |> Graph.add_junction(junction_1)
     |> Graph.add_junction(junction_2)
+    |> Graph.add_junction(junction_3)
+    |> Graph.add_junction(junction_4)
+    |> Graph.add_junction(junction_5)
     |> Graph.add_road(road_1, junction_1, junction_2)
-
-    # |> Graph.add_junction(junction_3)
-    # |> Graph.add_road(road_2, junction_2, junction_3)
-    # |> Graph.add_road(road_3, junction_3, junction_1)
+    |> Graph.add_road(road_2, junction_2, junction_3)
+    |> Graph.add_road(road_3, junction_3, junction_4)
+    |> Graph.add_road(road_4, junction_4, junction_5)
+    |> Graph.add_road(road_5, junction_5, junction_1)
+    |> Graph.add_road(road_6, junction_4, junction_2)
   end
 
   # def step_graph
@@ -73,13 +69,13 @@ defmodule Traffic.Network do
     |> Enum.flat_map(fn {k, v} ->
       v
       |> Enum.map(fn edge ->
-        road = Agent.get(edge.label, fn a -> a end)
+        road = Agent.get(elem(edge.label, 0), fn a -> a end)
 
         {road.name,
          %{
            road: road,
            connection: k,
-           light: :red
+           light: elem(edge.label, 1)
          }}
       end)
     end)
@@ -110,7 +106,7 @@ defmodule Traffic.Network do
       |> Graph.roads()
       |> Enum.map(fn road_edge ->
         Task.async(fn ->
-          Agent.get(road_edge.label, fn road ->
+          Agent.get(elem(road_edge.label, 0), fn road ->
             %{
               road: road,
               from: Map.get(junctions_map, road_edge.v1) |> elem(1),

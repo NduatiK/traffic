@@ -24,6 +24,7 @@ defmodule TrafficWeb.Router do
     pipe_through :browser
 
     live("/map", Map)
+    live("/lofi_map", LofiMap)
   end
 
   # Other scopes may use custom stacks.

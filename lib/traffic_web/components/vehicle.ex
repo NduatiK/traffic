@@ -29,7 +29,7 @@ defmodule TrafficWeb.Components.Vehicle do
   def render(assigns) do
     ~F"""
     <svg x={round(@x)} y={round(@y)}>
-      <Mustang breadth={@breadth} length={@length} color={render_speed(@vehicle)}/>
+      <Mustang breadth={@breadth} length={@length} color={render_speed(@vehicle)} />
     </svg>
     """
   end

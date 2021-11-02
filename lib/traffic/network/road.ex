@@ -37,35 +37,35 @@ defmodule Traffic.Network.Road do
       right: [
         [
           {Vehicle.random(), 0},
-          {Vehicle.random(), 3},
-          {Vehicle.random(), 5},
-          {Vehicle.random(), 6},
-          {Vehicle.random(), 9}
+          {Vehicle.random(), 3}
+          # {Vehicle.random(), 5},
+          # {Vehicle.random(), 6},
+          # {Vehicle.random(), 9}
         ],
         [
-          {Vehicle.random(), 0},
-          {Vehicle.random(), 3},
-          {Vehicle.random(), 5},
-          {Vehicle.random(), 6},
-          {Vehicle.random(), 9}
+          #   {Vehicle.random(), 0},
+          #   {Vehicle.random(), 3},
+          #   {Vehicle.random(), 5},
+          #   {Vehicle.random(), 6},
+          #   {Vehicle.random(), 9}
         ]
       ],
       left: [
-        # [
-        #   {Vehicle.random(), 0.5},
-        #   {Vehicle.random(), 1},
-        #   {Vehicle.random(), 2},
-        #   {Vehicle.random(), 4},
-        #   {Vehicle.random(), 8},
-        #   {Vehicle.random(), 9}
-        # ],
         [
-          {Vehicle.random(), 0},
-          {Vehicle.random(), 1},
-          {Vehicle.random(), 2},
-          {Vehicle.random(), 4},
-          {Vehicle.random(), 8},
-          {Vehicle.random(), 9}
+          #   {Vehicle.random(), 0.5},
+          #   {Vehicle.random(), 1},
+          #   {Vehicle.random(), 2},
+          #   {Vehicle.random(), 4},
+          #   {Vehicle.random(), 8},
+          #   {Vehicle.random(), 9}
+        ],
+        [
+          {Vehicle.random(), 0}
+          # {Vehicle.random(), 1},
+          # {Vehicle.random(), 2},
+          # {Vehicle.random(), 4},
+          # {Vehicle.random(), 8},
+          # {Vehicle.random(), 9}
         ]
       ]
     }

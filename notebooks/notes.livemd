@@ -356,9 +356,7 @@ junction
 
 ## Section
 
-The graph sends out a pulse to each road which in turn sends out a pulse to all the __*
-
-lanes*__ feeding into it.
+The graph sends out a pulse to each road which in turn sends out a pulse to all the __*lanes*__ feeding into it.
 
 The pulse is received by the lanes to prevent "double spending" on the pulse.
 
@@ -391,17 +389,27 @@ end
 
 ## Roadmap
 
+### Last time
+
 * [x] Model one speed car
 * [x] Model roads with lanes
 * [x] Model two road junction
 * [x] Implement simple junction and road movement on tick
-* [ ] Complete implementing driver profiles and use them for new vehicles
-* [ ] Implement network of roads and junctions
-* [ ] Add lane switching
+
+---
+
+### Since then
+
+* [x] Visualize road network in browser (SVG)
+* [x] Implement network of roads and junctions
+* [ ] Complete implementing driver profiles and use them for new vehicles 20%
+
+---
+
+* [ ] Add signal optimization
 * [ ] Complete random vehicle generation and removal based on road usage patterns
 * [ ] Add route planning based on A-star to provide random start and end points for cars
-* [ ] Add signal optimization
-* [ ] Visualize road network in browser (SVG)
+* [ ] Add lane switc
 
 ---
 

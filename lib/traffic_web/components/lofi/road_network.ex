@@ -1,7 +1,7 @@
-defmodule TrafficWeb.Components.RoadNetwork do
+defmodule TrafficWeb.Components.Lofi.RoadNetwork do
   use Surface.LiveComponent
 
-  alias TrafficWeb.Components.{Vehicle, Lane, LaneDivider, Road, Junction}
+  alias TrafficWeb.Components.Lofi.{Vehicle, Lane, LaneDivider, Road, Junction}
 
   data width, :integer, default: 2000
   data height, :integer, default: 1010
@@ -59,7 +59,7 @@ defmodule TrafficWeb.Components.RoadNetwork do
       {#for {junction, id} <- Enum.with_index(@junctions)}
         <Junction id={id} junction={junction} />
       {/for} {#for {road, id} <- Enum.with_index(@roads)}
-        <Road id={"road-#{id}"} road={road.road} from={road.from} to={road.to} lane_width={20} />
+        <Road id={"road-#{id}"} road={road.road} from={road.from} to={road.to} lane_width={30}/>
       {/for}
     </svg>
     """

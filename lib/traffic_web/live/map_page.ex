@@ -18,7 +18,7 @@ defmodule TrafficWeb.Pages.Map do
 
     socket =
       socket
-      |> assign(graph: Traffic.Network.Server.get(Traffic.Network.Server))
+      |> assign(graph: Traffic.Network.Server.get_graph(Traffic.Network.Server))
 
     {:ok, socket}
   end

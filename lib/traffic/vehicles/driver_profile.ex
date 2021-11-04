@@ -35,16 +35,6 @@ defmodule Traffic.Vehicles.DriverProfile do
     }
   end
 
-  def random do
-    [
-      {&tailgater/0, 0.5},
-      {&planner/0, 0.5},
-      {&flow_conformist/0, 0.5},
-      {&extremist/0, 0.5},
-      {&ultra_conservative/0, 0.5}
-    ]
-  end
-
   def tailgater do
     %DriverProfile{
       mean_speed: gauss(50, 10),
@@ -90,5 +80,92 @@ defmodule Traffic.Vehicles.DriverProfile do
     }
   end
 
-  def gauss(mean, std), do: max(0, :rand.normal(mean, std))
+  defp gauss(mean, std), do: max(0, :rand.normal(mean, std))
+
+  @profiles [
+    {&__MODULE__.tailgater/0, :tailgater},
+    {&__MODULE__.planner/0, :planner},
+    {&__MODULE__.flow_conformist/0, :flow_conformist},
+    {&__MODULE__.extremist/0, :extremist},
+    {&__MODULE__.ultra_conservative/0, :ultra_conservative}
+  ]
+
+  @profile_count Enum.count(@profiles)
+
+  def default_stats() do
+    @profiles
+    |> Enum.map(fn {_, name} -> {name, 0.6} end)
+    |> Enum.into(%{})
+  end
+
+  @doc """
+  random(%{
+    tailgater: 0.7,
+    planner: 0.7,
+    flow_conformist: 0,
+    extremist: 0,
+    ultra_conservative: 0
+  }) would only produce tailgaters and planners with equal probability
+
+  If the stat is unassigned, we give it 0.5
+  If all the stats are 0, we give each 0.5
+  """
+  def random(stats) do
+    if invalid_stats?(stats) do
+      do_random(default_stats())
+    else
+      do_random(stats)
+    end
+  end
+
+  defp invalid_stats?(stats) do
+    map_size(stats) == @profile_count and Enum.all?(fn {k, v} -> v <= 0 end)
+  end
+
+  defp do_random(stats) do
+    distribution =
+      @profiles
+      |> Enum.map(&get_stat(&1, stats))
+
+    distribution_range =
+      distribution
+      |> Enum.map(&elem(&1, 1))
+      |> Enum.sum()
+
+    random_number = :rand.uniform_real() * distribution_range
+
+    distribution =
+      distribution
+      |> find_profile_at(random_number)
+      |> then(fn generator -> generator.() end)
+  end
+
+  defp get_stat({generator, name}, stats, default \\ 0.5) do
+    {generator,
+     stats
+     |> Map.get(name, default)
+     |> clamp(0, 1)}
+  end
+
+  defp find_profile_at(distribution, random_number) do
+    distribution
+    |> Enum.reduce_while(0, fn
+      # stop when the the random number is between
+      # the upper and lower bounds of the profile
+      {generator, size}, lower_bound when random_number <= lower_bound + size ->
+        {:halt, generator}
+
+      # otherwise move to next profile
+      {_, size}, lower_bound ->
+        {:cont, lower_bound + size}
+    end)
+  end
+
+  defp clamp(num1, min_value, max_value) do
+    num1
+    # At the very most take the max value
+    |> min(max_value)
+    # At the very least take the min value
+    |> max(min_value)
+  end
 end

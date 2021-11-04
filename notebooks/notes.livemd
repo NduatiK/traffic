@@ -407,9 +407,12 @@ end
 ---
 
 * [ ] Add signal optimization
+  * [ ] Multiple strategies
+    * [ ] Naive
+    * [ ] Genetic Algorithms?
 * [ ] Complete random vehicle generation and removal based on road usage patterns
 * [ ] Add route planning based on A-star to provide random start and end points for cars
-* [ ] Add lane switc
+* [ ] Add lane switching
 
 ---
 

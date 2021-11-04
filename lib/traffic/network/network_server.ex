@@ -8,12 +8,20 @@ defmodule Traffic.Network.Server do
     GenServer.start_link(__MODULE__, default, name: __MODULE__)
   end
 
-  def get(pid) do
-    GenServer.call(pid, :get)
+  def get_graph(pid) do
+    GenServer.call(pid, :get_graph)
   end
 
   def get_compiled(pid) do
     GenServer.call(pid, :get_compiled)
+  end
+
+  def get_driver_config(pid) do
+    GenServer.call(pid, :get_driver_config)
+  end
+
+  def set_driver_config(pid, config) do
+    GenServer.cast(pid, {:set_driver_config, config})
   end
 
   # Server (callbacks)
@@ -21,24 +29,40 @@ defmodule Traffic.Network.Server do
   def init(_) do
     Process.send_after(self(), :tick, 5000)
 
-    {:ok, Network.build_network()}
+    {:ok,
+     %{
+       graph: Network.build_network(),
+       config:
+         %Traffic.Network.Config{}
+         |> IO.inspect()
+     }}
   end
 
   @impl true
-  def handle_call(:get, _from, network) do
-    {:reply, network, network}
+  def handle_call(:get_graph, _from, %{graph: network} = state) do
+    {:reply, network, state}
   end
 
   @impl true
-  def handle_call(:get_compiled, _from, network) do
+  def handle_call(:get_compiled, _from, %{graph: network} = state) do
     {junctions, roads} = Network.compile_network(network)
 
-    {:reply, {junctions, roads}, network}
+    {:reply, {junctions, roads}, state}
   end
 
   @impl true
-  def handle_info(:tick, state) do
+  def handle_call(:get_driver_config, _from, %{config: config} = state) do
+    {:reply, config.driver_profile_stats, state}
+  end
+
+  @impl true
+  def handle_cast({:set_driver_config, driver_config}, %{config: config} = state) do
+    {:noreply, %{state | config: %{config | driver_profile_stats: driver_config}}}
+  end
+
+  @impl true
+  def handle_info(:tick, %{graph: network} = state) do
     Process.send_after(self(), :tick, 10)
-    {:noreply, Network.step(state)}
+    {:noreply, %{state | graph: Network.step(network)}}
   end
 end

@@ -24,7 +24,7 @@ defmodule TrafficWeb.Components.Lane do
       {#for {vehicles, index} <- Enum.with_index(@lanes)}
         {#if index + 1 != @lanes |> Enum.count()}
           <LaneDivider
-            id={@road_name  <> Integer.to_string(index) <> @direction}
+            id={@road_name <> Integer.to_string(index) <> @direction}
             width={@width}
             index={index}
             lane_width={@lane_width}

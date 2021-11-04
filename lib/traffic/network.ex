@@ -6,13 +6,7 @@ defmodule Traffic.Network do
   end
 
   def start_junction(x, y) do
-    Agent.start_link(fn ->
-      %Junction{
-        roads: %{},
-        x: x,
-        y: y
-      }
-    end)
+    Agent.start_link(fn -> %Junction{roads: %{}, x: x, y: y} end)
   end
 
   def build_network() do

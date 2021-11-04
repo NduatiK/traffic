@@ -1,13 +1,16 @@
 defmodule TrafficWeb.Pages.LofiMap do
   use TrafficWeb, :surface_view_helpers
   alias TrafficWeb.Components.Lofi.{Road, RoadNetwork, Junction}
+  alias TrafficWeb.Components.Canvas
+  alias TrafficWeb.Components.DriverDistributionModal
 
   data width, :integer, default: 2000
   data height, :integer, default: 1010
   data padding, :integer, default: 50
-  # data width, :integer, default: 1000
-  # data height, :integer, default: 510
   data graph, :map
+
+  data show_driver_distributions, :boolean, default: true
+  data driver_distributions, :map, default: %{}
 
   @rate round(1000 / 24)
   # @rate round(48000 / 24)
@@ -18,7 +21,12 @@ defmodule TrafficWeb.Pages.LofiMap do
 
     socket =
       socket
-      |> assign(graph: Traffic.Network.Server.get(Traffic.Network.Server))
+      |> assign(graph: Traffic.Network.Server.get_graph(Traffic.Network.Server))
+      |> assign(
+        driver_distributions:
+          Traffic.Network.Server.get_driver_config(Traffic.Network.Server)
+          |> Map.to_list()
+      )
 
     {:ok, socket}
   end
@@ -46,24 +54,40 @@ defmodule TrafficWeb.Pages.LofiMap do
     {:noreply, socket}
   end
 
-  alias TrafficWeb.Components.Vehicle.Helpers, as: Vehicles
   @impl true
   def render(assigns) do
-    # enable-background={"new 0 0 #{@width} 510"}
     ~F"""
-    <svg
-      x="0px"
-      y="0px"
-      width={@width + @padding * 2}
-      height={@height + @padding * 2}
-      viewBox={"#{-@padding} #{-@padding} #{@width + @padding} #{@height + @padding}"}
-      xml:space="preserve"
-    >
-      <defs>
-        {{:safe, Vehicles.Mustang.svg()}} {{:safe, Vehicles.Bus.svg()}}
-      </defs>
+    <Canvas id="canvas" width={@width} height={@height} padding={@padding}>
+      <:overlays>
+        <DriverDistributionModal id="driver_modal"
+
+        top={6} right={6} :if={@show_driver_distributions}
+
+        driver_distributions={@driver_distributions}/>
+      </:overlays>
       <RoadNetwork id="network" network={@graph} />
-    </svg>
+    </Canvas>
     """
+  end
+
+  @impl true
+  def handle_event("slider_changed", %{"name" => name, "value" => newValue} = params, socket)
+      when is_number(newValue) and newValue >= 0 and newValue <= 1 do
+    driver_distributions =
+      socket.assigns.driver_distributions
+      |> Enum.map(fn {k, v} ->
+        if name == Atom.to_string(k) do
+          {k, newValue}
+        else
+          {k, v}
+        end
+      end)
+      |> Enum.into(%{})
+
+    Traffic.Network.Server.set_driver_config(Traffic.Network.Server, driver_distributions)
+
+    {:noreply,
+     socket
+     |> assign(driver_distributions: driver_distributions)}
   end
 end

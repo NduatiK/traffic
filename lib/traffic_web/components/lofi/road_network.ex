@@ -3,8 +3,6 @@ defmodule TrafficWeb.Components.Lofi.RoadNetwork do
 
   alias TrafficWeb.Components.Lofi.{Vehicle, Lane, LaneDivider, Road, Junction}
 
-  data width, :integer, default: 2000
-  data height, :integer, default: 1010
   data padding, :integer, default: 50
 
   prop network, :map
@@ -49,17 +47,11 @@ defmodule TrafficWeb.Components.Lofi.RoadNetwork do
     <svg
       x="0px"
       y="0px"
-      width={@width + @padding * 2}
-      height={@height + @padding * 2}
-      viewBox={"#{-@padding} #{-@padding} #{@width + @padding} #{@height + @padding}"}
-      xml:space="preserve"
-      xmlns="http://www.w3.org/2000/svg"
-      xmlns:xlink="http://www.w3.org/1999/xlink"
     >
       {#for {junction, id} <- Enum.with_index(@junctions)}
         <Junction id={id} junction={junction} />
       {/for} {#for {road, id} <- Enum.with_index(@roads)}
-        <Road id={"road-#{id}"} road={road.road} from={road.from} to={road.to} lane_width={30}/>
+        <Road id={"road-#{id}"} road={road.road} from={road.from} to={road.to} lane_width={30} />
       {/for}
     </svg>
     """

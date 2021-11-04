@@ -45,7 +45,7 @@ defmodule Traffic.Network.Graph do
   end
 
   def add_road(graph, road, junction_1, junction_2) do
-    # nil junction that immediately turns cars back
+    # nil junction that immediately turns cars
 
     graph
     |> Graph.add_edge(junction_1, junction_2, label: {road, :green})

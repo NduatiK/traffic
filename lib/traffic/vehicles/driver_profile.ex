@@ -4,6 +4,7 @@ defmodule Traffic.Vehicles.DriverProfile do
 
   typedstruct do
     # in Km.h
+    field :name, atom(), enforce: true
     field :mean_speed, float(), enforce: true
     field :speed_std_dev, float(), default: 5
     # in Km.h/s, default: Up to 60 KpH in 15 seconds
@@ -15,6 +16,7 @@ defmodule Traffic.Vehicles.DriverProfile do
 
   def default() do
     %DriverProfile{
+      name: :default,
       mean_speed: 40,
       initial_acceleration: 50 / 15
     }
@@ -22,6 +24,7 @@ defmodule Traffic.Vehicles.DriverProfile do
 
   def default_fast() do
     %DriverProfile{
+      name: :default_fast,
       mean_speed: 50,
       initial_acceleration: 60 / 15
     }
@@ -29,6 +32,7 @@ defmodule Traffic.Vehicles.DriverProfile do
 
   def random(mean, std) do
     %DriverProfile{
+      name: :random,
       mean_speed: gauss(mean, std),
       speed_std_dev: std,
       initial_acceleration: 50 / 15
@@ -37,6 +41,7 @@ defmodule Traffic.Vehicles.DriverProfile do
 
   def tailgater do
     %DriverProfile{
+      name: :tailgater,
       mean_speed: gauss(50, 10),
       speed_std_dev: 10,
       initial_acceleration: 50 / 15,
@@ -46,6 +51,7 @@ defmodule Traffic.Vehicles.DriverProfile do
 
   def planner do
     %DriverProfile{
+      name: :planner,
       mean_speed: gauss(50, 10),
       speed_std_dev: 10,
       initial_acceleration: 50 / 15,
@@ -55,6 +61,7 @@ defmodule Traffic.Vehicles.DriverProfile do
 
   def flow_conformist do
     %DriverProfile{
+      name: :flow_conformist,
       mean_speed: gauss(40, 5),
       speed_std_dev: 5,
       initial_acceleration: 50 / 15,
@@ -64,6 +71,7 @@ defmodule Traffic.Vehicles.DriverProfile do
 
   def extremist do
     %DriverProfile{
+      name: :extremist,
       mean_speed: gauss(40, 20),
       speed_std_dev: 20,
       initial_acceleration: 50 / 15,
@@ -73,9 +81,10 @@ defmodule Traffic.Vehicles.DriverProfile do
 
   def ultra_conservative do
     %DriverProfile{
-      mean_speed: gauss(40, 20),
+      name: :ultra_conservative,
+      mean_speed: gauss(20, 20),
       speed_std_dev: 20,
-      initial_acceleration: 50 / 15,
+      initial_acceleration: 15 / 15,
       distance_from_lead: 3
     }
   end
@@ -111,15 +120,19 @@ defmodule Traffic.Vehicles.DriverProfile do
   If all the stats are 0, we give each 0.5
   """
   def random(stats) do
-    if invalid_stats?(stats) do
-      do_random(default_stats())
-    else
-      do_random(stats)
-    end
+    profile =
+      if invalid_stats?(stats) do
+        do_random(default_stats())
+      else
+        do_random(stats)
+      end
+
+    IO.inspect(profile.name)
+    profile
   end
 
   defp invalid_stats?(stats) do
-    map_size(stats) == @profile_count and Enum.all?(fn {k, v} -> v <= 0 end)
+    map_size(stats) == @profile_count and Enum.all?(stats, fn {_, v} -> v <= 0 end)
   end
 
   defp do_random(stats) do

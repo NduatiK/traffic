@@ -4,6 +4,7 @@ defmodule Traffic.Application do
   @moduledoc false
 
   use Application
+  @app Mix.Project.config()[:app]
 
   @impl true
   def start(_type, _args) do
@@ -17,11 +18,26 @@ defmodule Traffic.Application do
       # Start the Endpoint (http/https)
       TrafficWeb.Endpoint,
       # Start a network server
-      {Traffic.Network.Server, []}
+      {Traffic.Network.Server, []},
+      {
+        Desktop.Window,
+        [
+          app: @app,
+          id: TrafficWindow,
+          title: "Traffique",
+          size: {600, 500},
+          icon: "icon.png",
+          # menubar: TodoApp.MenuBar,
+          # icon_menu: TodoApp.Menu,
+          url: &TrafficWeb.Endpoint.url/0
+        ]
+      }
 
       # Start a worker by calling: Traffic.Worker.start_link(arg)
       # {Traffic.Worker, arg}
     ]
+
+    Desktop.identify_default_locale(TrafficWeb.Gettext)
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options

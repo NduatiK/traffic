@@ -23,7 +23,7 @@ defmodule Traffic.Network.Road do
   end
 
   def scale_speed() do
-    Application.get_env(:traffic, :scale_speed, 110)
+    Application.get_env(:traffic, :scale_speed, 500)
   end
 
   def set_scale_speed(speed) do
@@ -66,6 +66,49 @@ defmodule Traffic.Network.Road do
           # {Vehicle.random(), 4},
           # {Vehicle.random(), 8},
           # {Vehicle.random(), 9}
+        ]
+      ]
+    }
+  end
+
+  def preloaded(name, config) do
+    driver_profiles = config.driver_profile_stats
+
+    %Road{
+      name: name,
+      length: 10,
+      right: [
+        [
+          {Vehicle.random(driver_profiles), 0},
+          {Vehicle.random(driver_profiles), 3}
+          # {Vehicle.random(driver_profiles), 5},
+          # {Vehicle.random(driver_profiles), 6},
+          # {Vehicle.random(driver_profiles), 9}
+        ],
+        [
+          #   {Vehicle.random(driver_profiles), 0},
+          #   {Vehicle.random(driver_profiles), 3},
+          #   {Vehicle.random(driver_profiles), 5},
+          #   {Vehicle.random(driver_profiles), 6},
+          #   {Vehicle.random(driver_profiles), 9}
+        ]
+      ],
+      left: [
+        [
+          #   {Vehicle.random(driver_profiles), 0.5},
+          #   {Vehicle.random(driver_profiles), 1},
+          #   {Vehicle.random(driver_profiles), 2},
+          #   {Vehicle.random(driver_profiles), 4},
+          #   {Vehicle.random(driver_profiles), 8},
+          #   {Vehicle.random(driver_profiles), 9}
+        ],
+        [
+          {Vehicle.random(driver_profiles), 0}
+          # {Vehicle.random(driver_profiles), 1},
+          # {Vehicle.random(driver_profiles), 2},
+          # {Vehicle.random(driver_profiles), 4},
+          # {Vehicle.random(driver_profiles), 8},
+          # {Vehicle.random(driver_profiles), 9}
         ]
       ]
     }

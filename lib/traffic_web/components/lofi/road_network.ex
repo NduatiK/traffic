@@ -44,10 +44,7 @@ defmodule TrafficWeb.Components.Lofi.RoadNetwork do
   @impl true
   def render(assigns) do
     ~F"""
-    <svg
-      x="0px"
-      y="0px"
-    >
+    <svg x="0px" y="0px">
       {#for {junction, id} <- Enum.with_index(@junctions)}
         <Junction id={id} junction={junction} />
       {/for} {#for {road, id} <- Enum.with_index(@roads)}

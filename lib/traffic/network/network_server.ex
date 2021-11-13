@@ -24,16 +24,22 @@ defmodule Traffic.Network.Server do
     GenServer.cast(pid, {:set_driver_config, config})
   end
 
+  def reset_network(pid) do
+    GenServer.cast(pid, :reset_network)
+  end
+
   # Server (callbacks)
   @impl true
   def init(_) do
     Process.send_after(self(), :tick, 5000)
 
+    config = %Traffic.Network.Config{}
+
     {:ok,
      %{
-       graph: Network.build_network(),
+       graph: Network.build_network(config),
        config:
-         %Traffic.Network.Config{}
+         config
          |> IO.inspect()
      }}
   end
@@ -58,6 +64,15 @@ defmodule Traffic.Network.Server do
   @impl true
   def handle_cast({:set_driver_config, driver_config}, %{config: config} = state) do
     {:noreply, %{state | config: %{config | driver_profile_stats: driver_config}}}
+  end
+
+  @impl true
+  def handle_cast(:reset_network, %{graph: network, config: config} = state) do
+    network
+    |> Network.get_processes()
+    |> Enum.each(fn pid -> Agent.stop(pid) end)
+
+    {:noreply, %{state | graph: Network.build_network(config)}}
   end
 
   @impl true

@@ -55,7 +55,8 @@ defmodule Traffic.MixProject do
       {:libgraph, "~> 0.7"},
       {:surface_formatter, "~> 0.6.0"},
       # {:surface_heroicons, "~> 0.5.2"},
-      {:surface, "~> 0.6", override: true}
+      {:surface, "~> 0.6", override: true},
+      {:desktop, github: "elixir-desktop/desktop", tag: "v1.3.1"}
     ]
   end
 

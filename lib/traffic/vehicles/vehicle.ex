@@ -46,6 +46,23 @@ defmodule Traffic.Vehicles.Vehicle do
     }
   end
 
+  def random(driver_profile_generator) do
+    %DriverProfile{} = profile = DriverProfile.random(driver_profile_generator)
+
+    speed = profile.mean_speed
+    id = :rand.uniform(100_000)
+
+    %Vehicle{
+      id: id,
+      driver_profile: profile,
+      # speed: :rand.uniform(4),
+      speed: speed,
+      location_on_road: 0,
+      marker: "#{round(speed)}"
+      # marker: Enum.random(String.graphemes("◂▴◦▾◊"))
+    }
+  end
+
   def start_moving() do
   end
 

@@ -1,21 +1,21 @@
 defmodule Traffic.Network do
   alias Traffic.Network.{Road, Junction, Graph}
 
-  def start_road(name) do
-    Agent.start_link(fn -> Road.preloaded(name) end, name: name)
+  def start_road(name, config) do
+    Agent.start_link(fn -> Road.preloaded(name, config) end, name: name)
   end
 
   def start_junction(x, y) do
     Agent.start_link(fn -> %Junction{roads: %{}, x: x, y: y} end)
   end
 
-  def build_network() do
-    {:ok, road_1} = start_road(:road_1)
-    {:ok, road_2} = start_road(:road_2)
-    {:ok, road_3} = start_road(:road_3)
-    {:ok, road_4} = start_road(:road_4)
-    {:ok, road_5} = start_road(:road_5)
-    {:ok, road_6} = start_road(:road_6)
+  def build_network(config) do
+    {:ok, road_1} = start_road(:road_1, config)
+    {:ok, road_2} = start_road(:road_2, config)
+    {:ok, road_3} = start_road(:road_3, config)
+    {:ok, road_4} = start_road(:road_4, config)
+    {:ok, road_5} = start_road(:road_5, config)
+    {:ok, road_6} = start_road(:road_6, config)
 
     {:ok, junction_1} = start_junction(100, 100)
     {:ok, junction_2} = start_junction(500, 100)
@@ -127,5 +127,18 @@ defmodule Traffic.Network do
     end)
 
     graph
+  end
+
+  def get_processes(network) do
+    junctions =
+      network
+      |> Graph.junctions()
+
+    roads =
+      network
+      |> Graph.roads()
+      |> Enum.map(fn road -> elem(road.label, 0) end)
+
+    junctions ++ roads
   end
 end

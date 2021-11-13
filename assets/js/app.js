@@ -50,6 +50,9 @@ Hooks.PushEvent = {
     },
     pushEvent_(msg, val) {
         this.pushEvent(msg, val)
+    },
+    pushEventTo_(selector, msg, val) {
+        this.pushEventTo(selector, msg, val)
     }
 }
 

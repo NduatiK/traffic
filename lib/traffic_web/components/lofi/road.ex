@@ -62,7 +62,7 @@ defmodule TrafficWeb.Components.Lofi.Road do
         road_name={Atom.to_string(@road.name)}
         offset={1}
       />
-      <LaneDivider width={@length} lane_width={@lane_width} stroke_width={2} solid offset={4} />
+      <LaneDivider width={@length} lane_width={@lane_width} stroke_width={3} solid offset={4} />
       <Lane
         width={@length}
         road_length={@road.length}

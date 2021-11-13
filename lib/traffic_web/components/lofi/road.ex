@@ -48,7 +48,7 @@ defmodule TrafficWeb.Components.Lofi.Road do
   def render(assigns) do
     ~F"""
     <g
-      transform={"translate(#{elem(assigns.to, 0)}, #{elem(assigns.to, 1) - @height / 2}) rotate(#{@angle}, 0, #{@height / 2})"}
+    style={"transform: translate(#{elem(assigns.to, 0)}px, #{elem(assigns.to, 1) - @height / 2}px) rotate(#{@angle}deg)"}
       overflow="visible"
     >
       <Lane

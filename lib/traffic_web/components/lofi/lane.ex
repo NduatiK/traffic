@@ -19,8 +19,14 @@ defmodule TrafficWeb.Components.Lofi.Lane do
   def lane_width, do: 30
 
   def render(assigns) do
+    # transform-origin={"#{@width / 2} 0"} transform={if @flip, do: "scale(-1, 1)"}
     ~F"""
-    <svg width={@width} transform-origin={"#{@width / 2} 0"} transform={if @flip, do: "scale(-1, 1)"}>
+    <g width={@width}
+    style={"transform-origin: #{@width / 2}px 0px; transform: #{if @flip, do: "scale(-1, 1)"} "}
+    
+    
+    >
+    <rect width={@width} height={1} />
       {#for {vehicles, index} <- Enum.with_index(@lanes)}
         {#for {vehicle, position} <- vehicles}
           <Vehicle
@@ -33,7 +39,7 @@ defmodule TrafficWeb.Components.Lofi.Lane do
           />
         {/for}
       {/for}
-    </svg>
+    </g>
     """
   end
 end

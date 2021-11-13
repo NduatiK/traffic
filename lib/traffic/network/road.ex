@@ -41,24 +41,24 @@ defmodule Traffic.Network.Road do
           # {Vehicle.random(), 5},
           # {Vehicle.random(), 6},
           # {Vehicle.random(), 9}
-        ],
-        [
-          #   {Vehicle.random(), 0},
-          #   {Vehicle.random(), 3},
-          #   {Vehicle.random(), 5},
-          #   {Vehicle.random(), 6},
-          #   {Vehicle.random(), 9}
         ]
+        # , [
+        #   {Vehicle.random(), 0},
+        #   {Vehicle.random(), 3},
+        #   {Vehicle.random(), 5},
+        #   {Vehicle.random(), 6},
+        #   {Vehicle.random(), 9}
+        # ]
       ],
       left: [
-        [
-          #   {Vehicle.random(), 0.5},
-          #   {Vehicle.random(), 1},
-          #   {Vehicle.random(), 2},
-          #   {Vehicle.random(), 4},
-          #   {Vehicle.random(), 8},
-          #   {Vehicle.random(), 9}
-        ],
+        # [
+        #   {Vehicle.random(), 0.5},
+        #   {Vehicle.random(), 1},
+        #   {Vehicle.random(), 2},
+        #   {Vehicle.random(), 4},
+        #   {Vehicle.random(), 8},
+        #   {Vehicle.random(), 9}
+        # ],
         [
           {Vehicle.random(), 0}
           # {Vehicle.random(), 1},
@@ -84,24 +84,24 @@ defmodule Traffic.Network.Road do
           # {Vehicle.random(driver_profiles), 5},
           # {Vehicle.random(driver_profiles), 6},
           # {Vehicle.random(driver_profiles), 9}
-        ],
-        [
-          #   {Vehicle.random(driver_profiles), 0},
-          #   {Vehicle.random(driver_profiles), 3},
-          #   {Vehicle.random(driver_profiles), 5},
-          #   {Vehicle.random(driver_profiles), 6},
-          #   {Vehicle.random(driver_profiles), 9}
         ]
+        # [
+        #   {Vehicle.random(driver_profiles), 0},
+        #   {Vehicle.random(driver_profiles), 3},
+        #   {Vehicle.random(driver_profiles), 5},
+        #   {Vehicle.random(driver_profiles), 6},
+        #   {Vehicle.random(driver_profiles), 9}
+        # ]
       ],
       left: [
-        [
+        # [
           #   {Vehicle.random(driver_profiles), 0.5},
           #   {Vehicle.random(driver_profiles), 1},
           #   {Vehicle.random(driver_profiles), 2},
           #   {Vehicle.random(driver_profiles), 4},
           #   {Vehicle.random(driver_profiles), 8},
           #   {Vehicle.random(driver_profiles), 9}
-        ],
+        # ],
         [
           {Vehicle.random(driver_profiles), 0}
           # {Vehicle.random(driver_profiles), 1},

@@ -402,14 +402,14 @@ end
 
 * [x] Visualize road network in browser (SVG)
 * [x] Implement network of roads and junctions
-* [ ] Complete implementing driver profiles and use them for new vehicles 20%
-
----
-
+* [x] Complete implementing driver profiles and use them for new vehicles
 * [ ] Add signal optimization
   * [ ] Multiple strategies
     * [ ] Naive
     * [ ] Genetic Algorithms?
+
+---
+
 * [ ] Complete random vehicle generation and removal based on road usage patterns
 * [ ] Add route planning based on A-star to provide random start and end points for cars
 * [ ] Add lane switching
@@ -418,37 +418,3 @@ end
 
 Work on report alongside this
 
-```elixir
-width = 200
-height = 200
-
-#  """
-#  <%= for node <- @nodes do %>
-#    <rect x={node.x} y={node.y} rx="10" ry="10" width={node.width} height={node.height}
-#    class="node" phx-click="show_info" phx-value-info={node_encoded_pid(node.value)} phx-page-loading />
-#    <text class="tree-node-text" x={node.x + 10} y={node.y + div(node.height, 2)} dominant-baseline="central">
-#      <%= node.label %>
-#    </text>
-#  <% end %>
-#  <%= for line <- @lines do %>
-#    <line x1={line.x1} y1={line.y1} x2={line.x2} y2={line.y2} class="line" />
-#  <% end %>
-#  """ <>
-("""
- <svg width=#{width} height=#{height} id="tree" class="tree">
- """ <>
-   "</svg>")
-|> IO.inspect()
-|> Kino.Image.new(:svg)
-|> IO.inspect()
-```
-
-```elixir
-{:ok, resp} =
-  :httpc.request(:get, {'https://en.wikipedia.org/wiki/File:SVG_Logo.svg', []}, [],
-    body_format: :binary
-  )
-
-{{_, 200, 'OK'}, _headers, body} = resp
-Kino.Image.new(body, :svg)
-```

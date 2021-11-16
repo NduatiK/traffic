@@ -2,7 +2,7 @@ defmodule TrafficWeb.Pages.LofiMap do
   use TrafficWeb, :surface_view_helpers
   alias TrafficWeb.Components.Lofi.{Road, RoadNetwork, Junction}
   alias TrafficWeb.Components.Canvas
-  alias TrafficWeb.Components.{DriverDistributionModal, PositionedButton}
+  alias TrafficWeb.Components.{DriverDistributionModal, PositionedButton, Logo}
 
   data width, :integer, default: 2000
   data height, :integer, default: 1010
@@ -59,6 +59,7 @@ defmodule TrafficWeb.Pages.LofiMap do
     ~F"""
     <Canvas id="canvas" width={@width} height={@height} padding={@padding}>
       <:overlays>
+      <Logo />
       <PositionedButton right={6} top={6}>
       <svg
       :on-click="reset_network"

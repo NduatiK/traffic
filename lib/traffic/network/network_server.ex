@@ -33,14 +33,14 @@ defmodule Traffic.Network.Server do
   def init(_) do
     Process.send_after(self(), :tick, 5000)
 
-    config = %Traffic.Network.Config{}
+    config = %Traffic.Network.Config{
+      junction_strategy: Traffic.Network.Timing.NaiveStrategy
+    }
 
     {:ok,
      %{
        graph: Network.build_network(config),
-       config:
-         config
-         |> IO.inspect()
+       config: config
      }}
   end
 
@@ -76,8 +76,8 @@ defmodule Traffic.Network.Server do
   end
 
   @impl true
-  def handle_info(:tick, %{graph: network} = state) do
+  def handle_info(:tick, %{graph: network, config: config} = state) do
     Process.send_after(self(), :tick, 10)
-    {:noreply, %{state | graph: Network.step(network)}}
+    {:noreply, %{state | graph: Network.step(network, config)}}
   end
 end

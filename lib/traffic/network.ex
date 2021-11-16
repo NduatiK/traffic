@@ -1,7 +1,7 @@
 defmodule Traffic.Network do
-  alias Traffic.Network.{Road, Junction, Graph}
+  alias Traffic.Network.{Road, Junction, Graph, Config}
 
-  def start_road(name, config) do
+  def start_road(name, %Config{} = config) do
     Agent.start_link(fn -> Road.preloaded(name, config) end, name: name)
   end
 
@@ -39,7 +39,7 @@ defmodule Traffic.Network do
 
   # def step_graph
 
-  def step_junction(graph, junction_pid) do
+  def step_junction(graph, junction_pid, config) do
     # Step self
     Agent.get_and_update(junction_pid, fn junction ->
       roads =
@@ -47,7 +47,7 @@ defmodule Traffic.Network do
         |> Graph.junction_roads(junction_pid)
         |> get_values()
 
-      {junction, output} = Junction.step(junction, roads)
+      {junction, output} = Junction.step(junction, roads, config)
 
       {output, junction}
     end)
@@ -55,21 +55,20 @@ defmodule Traffic.Network do
 
   def get_values(roads) do
     #  %{
-    #   a: %{road: road_a, connection: :right, light: :red},
-    #   b: %{road: road_b, connection: :left, light: :red}
+    #   a: %{road: road_a, connection: :right},
+    #   b: %{road: road_b, connection: :left}
     # }
     roads
     |> Map.to_list()
     |> Enum.flat_map(fn {k, v} ->
       v
       |> Enum.map(fn edge ->
-        road = Agent.get(elem(edge.label, 0), fn a -> a end)
+        road = Agent.get(edge.label, fn a -> a end)
 
         {road.name,
          %{
            road: road,
-           connection: k,
-           light: elem(edge.label, 1)
+           connection: k
          }}
       end)
     end)
@@ -100,7 +99,7 @@ defmodule Traffic.Network do
       |> Graph.roads()
       |> Enum.map(fn road_edge ->
         Task.async(fn ->
-          Agent.get(elem(road_edge.label, 0), fn road ->
+          Agent.get(road_edge.label, fn road ->
             %{
               road: road,
               from: Map.get(junctions_map, road_edge.v1) |> elem(1),
@@ -114,11 +113,11 @@ defmodule Traffic.Network do
     {junctions, roads}
   end
 
-  def step(graph) do
+  def step(graph, %Config{} = config) do
     graph
     |> Graph.junctions()
     |> Enum.map(fn junction ->
-      roads = step_junction(graph, junction)
+      roads = step_junction(graph, junction, config)
 
       roads
       |> Enum.map(fn {k, road} ->
@@ -137,7 +136,7 @@ defmodule Traffic.Network do
     roads =
       network
       |> Graph.roads()
-      |> Enum.map(fn road -> elem(road.label, 0) end)
+      |> Enum.map(fn road -> road.label end)
 
     junctions ++ roads
   end

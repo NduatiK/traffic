@@ -16,7 +16,7 @@ defmodule TrafficWeb.Components.DriverDistributionModal do
       style={top: "#{@top / 4}rem", right: "#{@right / 4}rem"}
       id="driver_dist_modal"
       x-data="{ open: false }"
-      x-bind:class="{'rounded bg-white shadow border-gray-200 border': true, 'relative overflow-hidden w-10 h-10': !open}"
+      x-bind:class="{'rounded bg-transparent shadow': true, 'relative overflow-hidden w-10 h-10': !open}"
     >
       <div x-bind:class="{'rounded bg-white shadow p-2 absolute': true, 'top-0 right-0': open}">
         <div class="flex flex-row justify-between text-indigo-800">

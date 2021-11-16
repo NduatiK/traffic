@@ -1,5 +1,12 @@
 defmodule Traffic.Network.Config do
   alias Traffic.Vehicles.DriverProfile
+  alias Traffic.Network.Timing.Strategy
 
-  defstruct driver_profile_stats: DriverProfile.default_stats()
+  use TypedStruct
+
+  # Enforce keys by default.
+  typedstruct enforce: true do
+    field :driver_profile_stats, map(), default: DriverProfile.default_stats()
+    field :junction_strategy, Strategy
+  end
 end

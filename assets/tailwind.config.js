@@ -8,7 +8,16 @@ module.exports = {
       colors: {
         'darkness': {
           'DEFAULT': "#2E2E2E",
-          '500': "#2E2E2E"
+          '50': '#8A8A8A',
+          '100': '#808080',
+          '200': '#6B6B6B',
+          '300': '#575757',
+          '400': '#424242',
+          '500': '#2E2E2E',
+          '600': '#121212',
+          '700': '#000000',
+          '800': '#000000',
+          '900': '#000000'
         },
         'lime': {
           'DEFAULT': "#CFFF60",
@@ -33,6 +42,10 @@ module.exports = {
           'Inter var',
           ...defaultTheme.fontFamily.sans
         ],
+        mono: [
+          'Space Mono',
+          ...defaultTheme.fontFamily.mono
+        ]
       }
     },
   },

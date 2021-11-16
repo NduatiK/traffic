@@ -2,27 +2,27 @@ defmodule Traffic.Network.Junction do
   use TypedStruct
   alias __MODULE__
   alias Traffic.Network.Road
+  alias Traffic.Network.Config
   alias Traffic.Vehicles.Vehicle
 
   @type vehicle_in_junction :: %{vehicle: Vehicle.t(), target_road: atom()}
 
   typedstruct do
-    # , [{Road.t(), Road.road_end()}]
-    field :roads, %{}, default: %{}
-    # field :roads, map(Road.name(), [{Road.t(), Road.road_end()}]), default: %{}
-
-    field :x, integer(), default: 0
-    field :y, integer(), default: 0
-    field :vehicle_in_junction, %{}, default: %{}
+    field(:roads, %{}, default: %{})
+    field(:x, integer(), default: 0)
+    field(:y, integer(), default: 0)
+    field(:vehicle_in_junction, %{}, default: %{})
+    field(:timings, %{}, default: nil)
   end
 
   def invert(:right), do: :left
   def invert(:left), do: :right
 
-  def step(%Junction{} = junction, roads) do
+  def step(%Junction{} = junction, roads, %Config{} = config) do
     # TODO: should pass through junction
     # TODO: block if junction blocked
     # TODO: block return info on if has space
+    timings = junction.timings || build_timings(roads)
 
     road_names =
       roads
@@ -32,8 +32,10 @@ defmodule Traffic.Network.Junction do
 
     roads =
       roads
-      |> Enum.map(fn {road_end, %{road: road, connection: connection, light: light} = r} ->
-        {road_end,
+      |> Enum.map(fn {road_name, %{road: road, connection: connection} = r} ->
+        light = timings[{road_name, connection}].state |> elem(0)
+
+        {road_name,
          %{r | road: Road.step(road, invert(connection), [{connection, light}], road_names)}}
       end)
       |> Enum.into(%{})
@@ -68,16 +70,55 @@ defmodule Traffic.Network.Junction do
     roads =
       roads
       |> Enum.map(&update_road(&1, vehicles_joining_from_junction))
-      |> Enum.into(%{})
+
+    timings =
+      roads
+      |> Enum.reverse()
+      |> Enum.reduce(timings, fn road, timings ->
+        update_lights(road, timings, config.junction_strategy)
+      end)
 
     {
       %{
         junction
         | roads: roads,
-          vehicle_in_junction: vehicle_in_junction
+          vehicle_in_junction: vehicle_in_junction,
+          timings: timings
       },
       roads
     }
+  end
+
+  def build_timings(roads) do
+    roads
+    |> Enum.map(fn {road_name, %{connection: connection}} ->
+      {{road_name, connection},
+       %{
+         state: {:red, :yellow},
+         last_change: 0,
+         now: 0
+       }}
+    end)
+    |> Enum.into(%{})
+  end
+
+  def update_lights(road, timings, junction_strategy) do
+    {road_name, %{connection: connection}} = road
+
+    timing = timings[{road_name, connection}]
+
+    {new_state, last_change} =
+      junction_strategy.tick(timing.state, timing.last_change, timing.now, [])
+
+    timings =
+      Map.put(timings, {road_name, connection}, %{
+        timing
+        | now: timing.now + 1,
+          state: new_state,
+          last_change: last_change
+      })
+
+    timings
   end
 
   def update_road({name, v}, entering_vehicles) do

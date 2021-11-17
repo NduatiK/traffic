@@ -23,7 +23,7 @@ defmodule Traffic.Network.Road do
   end
 
   def scale_speed() do
-    Application.get_env(:traffic, :scale_speed, 500)
+    Application.get_env(:traffic, :scale_speed, 100)
   end
 
   def set_scale_speed(speed) do
@@ -95,20 +95,20 @@ defmodule Traffic.Network.Road do
       ],
       left: [
         # [
-          #   {Vehicle.random(driver_profiles), 0.5},
-          #   {Vehicle.random(driver_profiles), 1},
-          #   {Vehicle.random(driver_profiles), 2},
-          #   {Vehicle.random(driver_profiles), 4},
-          #   {Vehicle.random(driver_profiles), 8},
-          #   {Vehicle.random(driver_profiles), 9}
+        #   {Vehicle.random(driver_profiles), 0.5},
+        #   {Vehicle.random(driver_profiles), 1},
+        #   {Vehicle.random(driver_profiles), 2},
+        #   {Vehicle.random(driver_profiles), 4},
+        #   {Vehicle.random(driver_profiles), 8},
+        #   {Vehicle.random(driver_profiles), 9}
         # ],
         [
-          {Vehicle.random(driver_profiles), 0}
+          {Vehicle.random(driver_profiles), 0},
           # {Vehicle.random(driver_profiles), 1},
           # {Vehicle.random(driver_profiles), 2},
           # {Vehicle.random(driver_profiles), 4},
           # {Vehicle.random(driver_profiles), 8},
-          # {Vehicle.random(driver_profiles), 9}
+          {Vehicle.random(driver_profiles), 9}
         ]
       ]
     }

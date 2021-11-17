@@ -13,7 +13,7 @@ defmodule TrafficWeb.Components.Canvas do
   def render(assigns) do
     # width={@width + @padding * 2}
     ~F"""
-    <div class="w-screen h-screen bg-darkness-300">
+    <div class="w-screen h-screen sbg-darkness-300">
       <div class="fixed z-10 top-0 right-0 left-0 bottom-0 pointer-events-none click-through-parent canvas">
         <#slot name="overlays" />
       </div>

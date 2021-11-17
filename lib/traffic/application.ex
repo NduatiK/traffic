@@ -18,7 +18,8 @@ defmodule Traffic.Application do
       # Start the Endpoint (http/https)
       TrafficWeb.Endpoint,
       # Start a network server
-      {Traffic.Network.Server, []},
+      {Traffic.Simulation, []},
+      {Registry, keys: :unique, name: Registry.Traffic},
       {
         Desktop.Window,
         [
@@ -37,12 +38,31 @@ defmodule Traffic.Application do
       # {Traffic.Worker, arg}
     ]
 
-    Desktop.identify_default_locale(TrafficWeb.Gettext)
+    setup()
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Traffic.Supervisor]
     Supervisor.start_link(children, opts)
+  end
+
+  def setup() do
+    Desktop.identify_default_locale(TrafficWeb.Gettext)
+
+    Task.async(fn ->
+      :observer.start()
+      :timer.sleep(1000)
+
+      Traffic.Simulation.start_simulation(:default,
+        config: %Traffic.Network.Config{
+          junction_strategy: Traffic.Network.Timing.NaiveStrategy
+        }
+      )
+
+      :timer.sleep(100)
+
+      Traffic.Network.build_network(:default)
+    end)
   end
 
   # Tell Phoenix to update the endpoint configuration

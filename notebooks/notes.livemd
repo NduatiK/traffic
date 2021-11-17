@@ -418,3 +418,9 @@ end
 
 Work on report alongside this
 
+
+Start the simulation supervisor
+- Start a default network supervisor
+- It starts the network manager
+  - It can start roads, junctions and vehicles
+  

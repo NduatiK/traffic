@@ -13,7 +13,6 @@ defmodule Traffic.Vehicles.Vehicle do
     field(:driver_profile, DriverProfile.t())
 
     # Location awareness
-    field(:location_on_road, float(), enforce: true)
     # field(:road, pid())
     # field(:junction, pid())
 
@@ -40,7 +39,6 @@ defmodule Traffic.Vehicles.Vehicle do
       driver_profile: DriverProfile.default(),
       # speed: :rand.uniform(4),
       speed: speed,
-      location_on_road: 0,
       marker: "#{round(speed)}"
       # marker: Enum.random(String.graphemes("◂▴◦▾◊"))
     }
@@ -57,7 +55,6 @@ defmodule Traffic.Vehicles.Vehicle do
       driver_profile: profile,
       # speed: :rand.uniform(4),
       speed: speed,
-      location_on_road: 0,
       marker: "#{round(speed)}"
       # marker: Enum.random(String.graphemes("◂▴◦▾◊"))
     }

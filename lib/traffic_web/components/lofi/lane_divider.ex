@@ -5,7 +5,7 @@ defmodule TrafficWeb.Components.Lofi.LaneDivider do
   prop(offset, :integer, default: 0)
   prop(index, :integer, default: -1)
   prop(stroke_width, :integer, default: 1)
-  prop(stroke, :string, default: "white")
+  prop(stroke, :string, default: "#C2C2C2")
   prop(solid, :boolean, default: false)
 
   def render(assigns) do

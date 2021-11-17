@@ -8,6 +8,7 @@ defmodule TrafficWeb.Pages.LofiMap do
   data height, :integer, default: 1010
   data padding, :integer, default: 50
   data graph, :map
+  data network_id, :atom
 
   data show_driver_distributions, :boolean, default: true
   data driver_distributions, :map, default: %{}
@@ -17,17 +18,23 @@ defmodule TrafficWeb.Pages.LofiMap do
   # @rate round(48000 / 24)
 
   @impl true
-  def mount(_params, _session, socket) do
-    if connected?(socket), do: Process.send_after(self(), :tick, @rate)
-
+  def mount(params, _session, socket) do
     socket =
-      socket
-      |> assign(graph: Traffic.Network.Server.get_graph(Traffic.Network.Server))
-      |> assign(
-        driver_distributions:
-          Traffic.Network.Server.get_driver_config(Traffic.Network.Server)
-          |> Map.to_list()
-      )
+      case validate_network_id(socket, params) do
+        :error ->
+          socket
+          |> redirect(Routes.page_path(socket, :index))
+          |> put_flash(:error, "The simulation #{params["id"]} does not exist")
+
+        {network_id, socket} ->
+          socket
+          |> assign(graph: Traffic.Network.Manager.get_graph(network_id))
+          |> assign(
+            driver_distributions:
+              Traffic.Network.Manager.get_driver_config(network_id)
+              |> Map.to_list()
+          )
+      end
 
     {:ok, socket}
   end
@@ -46,11 +53,27 @@ defmodule TrafficWeb.Pages.LofiMap do
   end
 
   @impl true
-  def handle_info(:tick, socket) do
-    Process.send_after(self(), :tick, @rate)
+  def handle_info({Traffic.Network.JunctionServer, state}, socket) do
+    send_update(Junction,
+      id: "junction_#{inspect(state.pid)}",
+      color: state.color,
+      junction: state.pid
+    )
 
-    send_update(RoadNetwork, id: "network")
+    # IO.puts("HANDLE BROADCAST FOR #{inspect(state.pid)}")
+    {:noreply, socket}
+  end
 
+  @impl true
+  def handle_info({Traffic.Network.RoadServer, state}, socket) do
+    send_update(Road,
+      id: "road_#{inspect(state.pid)}",
+      counter: state
+      # color: state.color,
+      # road: state.pid
+    )
+
+    # IO.puts("HANDLE Road BROADCAST FOR #{inspect(state.pid)}")
     {:noreply, socket}
   end
 
@@ -59,7 +82,9 @@ defmodule TrafficWeb.Pages.LofiMap do
     ~F"""
     <Canvas id="canvas" width={@width} height={@height} padding={@padding}>
       <:overlays>
-        <Logo /> <PositionedButton right={6} top={6}>
+        {!--<Logo />
+        --}
+        <PositionedButton right={6} top={6}>
           <svg
             :on-click="reset_network"
             xmlns="http://www.w3.org/2000/svg"
@@ -78,7 +103,7 @@ defmodule TrafficWeb.Pages.LofiMap do
           driver_distributions={@driver_distributions}
         />
       </:overlays>
-      <RoadNetwork id="network" network={@graph} />
+      <RoadNetwork id="network" network_id={@network_id} network={@graph} />
     </Canvas>
     """
   end
@@ -103,10 +128,21 @@ defmodule TrafficWeb.Pages.LofiMap do
       end)
       |> Enum.into(%{})
 
-    Traffic.Network.Server.set_driver_config(Traffic.Network.Server, driver_distributions)
+    Traffic.Network.Manager.set_driver_config(socket.assigns.network_id, driver_distributions)
 
     {:noreply,
      socket
      |> assign(driver_distributions: driver_distributions)}
+  end
+
+  def validate_network_id(socket, params) do
+    try do
+      network_id = String.to_existing_atom(params["id"])
+
+      {network_id, assign(socket, network_id: network_id)}
+    rescue
+      _ ->
+        :error
+    end
   end
 end

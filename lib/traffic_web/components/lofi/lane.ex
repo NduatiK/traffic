@@ -7,6 +7,7 @@ defmodule TrafficWeb.Components.Lofi.Lane do
   prop(class, :string, default: "items-center")
   prop(road_name, :string)
   prop(lanes, :list)
+  prop(light, :string)
   prop(width, :integer)
   prop(lane_width, :integer)
   prop(road_length, :integer)
@@ -22,7 +23,8 @@ defmodule TrafficWeb.Components.Lofi.Lane do
     # transform-origin={"#{@width / 2} 0"} transform={if @flip, do: "scale(-1, 1)"}
     ~F"""
     <g width={@width} style={"transform-origin: #{@width / 2}px 0px; transform: #{if @flip, do: "scale(-1, 1)"} "}>
-      <rect width={@width} height={1} fill="transparent" /> {#for {vehicles, index} <- Enum.with_index(@lanes)}
+      <rect width={@width} height={1} fill="white" />
+       {#for {vehicles, index} <- Enum.with_index(@lanes)}
         {#for {vehicle, position} <- vehicles}
           <Vehicle
             id={vehicle.id}

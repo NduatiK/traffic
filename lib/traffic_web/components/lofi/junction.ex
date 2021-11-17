@@ -2,25 +2,41 @@ defmodule TrafficWeb.Components.Lofi.Junction do
   use Surface.LiveComponent
 
   alias TrafficWeb.Components.Lofi.{Vehicle, Lane, LaneDivider}
+  alias Traffic.Network.JunctionServer
 
   prop(class, :string, default: "items-center")
-  prop(junction, :map)
+  prop(junction, :any)
+  prop(network_id, :any)
 
-  data lane_color, :string, default: "#c0c0c0"
+  data(color, :string, default: "#869d9d")
+  data(x, :integer, default: 0)
+  data(y, :integer, default: 0)
 
-  # @impl true
-  # def update(assigns, socket) do
-  #   # socket =
-  #   #   socket
-  #   #   |> assign(
-  #   #     height:
-  #   #       (Enum.count(assigns.road.right) + Enum.count(assigns.road.left)) *
-  #   #         (assigns.lane_width + 1)
-  #   #   )
-  #   #   |> assign(assigns)
+  @impl true
+  def mount(socket) do
+    {:ok, socket}
+  end
 
-  #   {:ok, socket}
-  # end
+  @topic "junction_"
+
+  @impl true
+  def update(assigns, socket) do
+    socket =
+      if connected?(socket) do
+        socket
+        |> assign(assigns)
+        |> assign_new(:subscribed?, fn ->
+          TrafficWeb.Endpoint.subscribe(@topic <> "#{inspect(assigns.junction)}")
+          true
+        end)
+        |> load_location(assigns.junction)
+      else
+        socket
+        |> assign(assigns)
+      end
+
+    {:ok, socket}
+  end
 
   @impl true
   def render(assigns) do
@@ -28,11 +44,22 @@ defmodule TrafficWeb.Components.Lofi.Junction do
     ~F"""
     {!--
     <g width={60} height={60}>
+    # <circle cx={@junction.x} cy={@junction.y} r="8" fill="#869d9d" />
+    <circle cx={@x} cy={@y} r="8" fill="#869d9d" />
     --}
-    <circle cx={@junction.x} cy={@junction.y} r="8" fill="#869d9d" />
+    <circle cx={@x} cy={@y} r="8" fill="transparent" stroke="#869d9d" stroke-width={1} />
+
     {!--
     </g>
     --}
     """
+  end
+
+  def load_location(socket, junction) do
+    {x, y} = JunctionServer.get_location(junction)
+
+    socket
+    |> assign(x: x)
+    |> assign(y: y)
   end
 end

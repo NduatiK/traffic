@@ -1,6 +1,33 @@
 defmodule Traffic.Network do
   alias Traffic.Network.{Road, Junction, Graph, Config}
 
+  def start_simulation(name) do
+    Traffic.Simulation.start_simulation(name, [])
+  end
+
+  def start_road2(name, junction1, junction2) do
+    Traffic.Network.Manager.start_road(name, junction1, junction2)
+  end
+
+  def start_junction2(name, x, y) do
+    Traffic.Network.Manager.start_junction(name, x, y)
+  end
+
+  def build_network(name) do
+    # {:ok, junction_1} = start_junction2(name, 100, 100)
+    {:ok, junction_2} = start_junction2(name, 500, 100)
+    {:ok, junction_3} = start_junction2(name, 700, 300)
+    {:ok, junction_4} = start_junction2(name, 500, 500)
+    # {:ok, junction_5} = start_junction2(name, 100, 500)
+
+    # {:ok, _road_1} = start_road2(name, junction_1, junction_2)
+    {:ok, _road_2} = start_road2(name, junction_2, junction_3)
+    {:ok, _road_3} = start_road2(name, junction_3, junction_4)
+    # {:ok, _road_4} = start_road2(name, junction_4, junction_5)
+    # {:ok, _road_5} = start_road2(name, junction_5, junction_1)
+    {:ok, _road_6} = start_road2(name, junction_4, junction_2)
+  end
+
   def start_road(name, %Config{} = config) do
     Agent.start_link(fn -> Road.preloaded(name, config) end, name: name)
   end

@@ -6,4 +6,8 @@ defmodule Traffic do
   Contexts are also responsible for managing your data, regardless
   if it comes from the database, an external API or others.
   """
+
+  def via_tuple(module, unique_name) do
+    {:via, Registry, {Registry.Traffic, {module, unique_name}}}
+  end
 end

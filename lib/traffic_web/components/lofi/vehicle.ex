@@ -11,7 +11,14 @@ defmodule TrafficWeb.Components.Lofi.Vehicle do
 
   def render(assigns) do
     ~F"""
-    <circle cx={round(@x)} cy={round(@y)} r={3} stroke="white" stroke-width={2} fill={render_speed(@vehicle)} />
+    <circle
+      cx={round(@x)}
+      cy={round(@y)}
+      r={3}
+      stroke={render_speed(@vehicle)}
+      stroke-width={2}
+      fill={render_speed(@vehicle)}
+    />
     """
   end
 

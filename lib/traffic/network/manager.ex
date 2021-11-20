@@ -4,11 +4,12 @@ defmodule Traffic.Network.Manager do
 
   alias Traffic.Network.ChildSupervisor, as: ChildSup
   alias Traffic.Network.RoadServer
+  alias Traffic.Network.JunctionServer
 
   typedstruct module: State do
     field(:counters, map(), default: %{vehicle: 0, road: 0, junction: 0})
-    field(:name, :string, enforced: true)
-    field(:config, Traffic.Network.Config.t(), enforced: true)
+    field(:name, :string, enforce: true)
+    field(:config, Traffic.Network.Config.t(), enforce: true)
     field(:graph, Graph.t())
   end
 
@@ -98,6 +99,10 @@ defmodule Traffic.Network.Manager do
     new_graph = Graph.add_edge(state.graph, junction1, junction2, label: pid)
 
     # existing_roads_junction_1 =
+
+    JunctionServer.add_linked_road(junction1, {:left, pid})
+    JunctionServer.add_linked_road(junction2, {:right, pid})
+
     state.graph
     |> Graph.edges(junction1)
     |> Enum.each(fn edge ->

@@ -4,15 +4,12 @@ defmodule Traffic.Network.RoadServer do
   alias Traffic.Network.Road
   alias Traffic.Network.JunctionServer
 
-  typedstruct module: State, enforced: true do
+  typedstruct module: State, enforce: true do
     # field(:id, :any)
     field(:road, Road.t())
     field(:junction_and_colors, map())
 
     field(:paused, boolean(), default: false)
-    field(:counter, integer(), default: 0)
-    # field(:x, integer())
-    # field(:y, integer())
   end
 
   # Client
@@ -51,6 +48,10 @@ defmodule Traffic.Network.RoadServer do
 
   def get_light(server) do
     GenServer.call(server, :get_light)
+  end
+
+  def set_light(server, {side, color}) do
+    GenServer.cast(server, {:set_light, side, color})
   end
 
   def get_road_and_lights(server) do
@@ -101,6 +102,26 @@ defmodule Traffic.Network.RoadServer do
   end
 
   @impl true
+  def handle_cast({:set_light, side, color}, %State{} = state) do
+    junction_and_colors =
+      state.junction_and_colors
+      |> Map.update!(side, fn data ->
+        %{data | color: color}
+      end)
+
+    Phoenix.PubSub.broadcast(Traffic.PubSub, "road_#{inspect(self())}", {
+      __MODULE__,
+      %{pid: self()}
+    })
+
+    {:noreply,
+     %{
+       state
+       | junction_and_colors: junction_and_colors
+     }}
+  end
+
+  @impl true
   def handle_cast({:add_linked_road, {my_side, road_side}, road}, %State{} = state) do
     junction_and_colors =
       state.junction_and_colors
@@ -126,8 +147,7 @@ defmodule Traffic.Network.RoadServer do
     road =
       Road.join_road(
         state.road,
-        side
-        |> IO.inspect(),
+        side,
         0..(lane_count - 1)
         |> Enum.reduce(vehicles, fn lane_no, lanes ->
           Map.put_new(lanes, lane_no, [])
@@ -193,42 +213,13 @@ defmodule Traffic.Network.RoadServer do
 
     Phoenix.PubSub.broadcast(Traffic.PubSub, "road_#{inspect(self())}", {
       __MODULE__,
-      %{pid: self(), counter: state.counter}
+      %{pid: self()}
     })
 
     {:noreply,
      %{
        state
-       | road: road,
-         counter: state.counter + 1
-     }}
-  end
-
-  @impl true
-  def handle_info({Traffic.Network.JunctionServer, update}, state) do
-    Phoenix.PubSub.broadcast(Traffic.PubSub, "road_#{inspect(self())}", {
-      __MODULE__,
-      %{pid: self(), counter: state.counter + 1}
-    })
-
-    junction_and_colors =
-      state.junction_and_colors
-      |> Enum.map(fn {side, data} ->
-        if data.junction == update.pid do
-          data = %{data | color: update.color}
-
-          {side, data}
-        else
-          {side, data}
-        end
-      end)
-      |> Enum.into(%{})
-
-    {:noreply,
-     %{
-       state
-       | junction_and_colors: junction_and_colors,
-         counter: state.counter + 1
+       | road: road
      }}
   end
 

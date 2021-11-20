@@ -1,8 +1,15 @@
 defmodule Traffic.Network do
   alias Traffic.Network.{Road, Junction, Graph, Config}
 
+  @doc """
+  Best followed up by a Network.build_network(name)
+  """
   def start_simulation(name) do
-    Traffic.Simulation.start_simulation(name, [])
+    Traffic.Simulation.start_simulation(name,
+      config: %Traffic.Network.Config{
+        junction_strategy: Traffic.Network.Timing.NaiveStrategy
+      }
+    )
   end
 
   def start_road2(name, junction1, junction2) do

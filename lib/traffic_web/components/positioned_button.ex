@@ -9,13 +9,13 @@ defmodule TrafficWeb.Components.PositionedButton do
   @impl true
   def render(assigns) do
     ~F"""
-    <div
-      class="rounded cursor-pointer bg-white shadow p-2 absolute"
-      :on-click={@click}
+    <button
+      class="rounded p-2 bg-white shadow absolute"
       style={top: "#{@top / 4}rem", right: "#{@right / 4}rem"}
-    >
-      <#slot />
-    </div>
+      :on-click={@click}
+      >
+    <#slot />
+    </button>
     """
   end
 end

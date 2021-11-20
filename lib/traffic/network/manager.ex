@@ -1,5 +1,6 @@
 defmodule Traffic.Network.Manager do
-  use GenServer
+  use GenServer, restart: :temporary
+
   use TypedStruct
 
   alias Traffic.Network.ChildSupervisor, as: ChildSup
@@ -81,6 +82,12 @@ defmodule Traffic.Network.Manager do
     manager
     |> get_manager()
     |> GenServer.cast(:pause)
+  end
+
+  def reset_network(name) when is_atom(name) do
+    Traffic.Network.NetworkSupervisor.stop(name)
+    Traffic.Network.start_simulation(name)
+    Traffic.Network.build_network(name)
   end
 
   def get_pause_status(manager) do

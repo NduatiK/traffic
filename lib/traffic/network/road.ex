@@ -23,7 +23,7 @@ defmodule Traffic.Network.Road do
   end
 
   def scale_speed() do
-    Application.get_env(:traffic, :scale_speed, 100)
+    Application.get_env(:traffic, :scale_speed, 50)
   end
 
   def set_scale_speed(speed) do

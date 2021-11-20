@@ -42,16 +42,7 @@ defmodule TrafficWeb.Components.Lofi.Junction do
   def render(assigns) do
     # <g width={@road.length * 100} height={@height}>
     ~F"""
-    {!--
-    <g width={60} height={60}>
-    # <circle cx={@junction.x} cy={@junction.y} r="8" fill="#869d9d" />
-    <circle cx={@x} cy={@y} r="8" fill="#869d9d" />
-    --}
-    <circle cx={@x} cy={@y} r="8" fill="transparent" stroke="#869d9d" stroke-width={1} />
-
-    {!--
-    </g>
-    --}
+    <circle cx={@x} cy={@y} r="8"  fill="#efefef" stroke="#869d9d" stroke-width={1} />
     """
   end
 

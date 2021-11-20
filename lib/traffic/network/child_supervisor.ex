@@ -1,5 +1,5 @@
 defmodule Traffic.Network.ChildSupervisor do
-  use DynamicSupervisor
+  use DynamicSupervisor, restart: :temporary
   alias Traffic.Network.RoadServer
   alias Traffic.Vehicles.VehicleServer
   alias Traffic.Network.JunctionServer
@@ -40,5 +40,11 @@ defmodule Traffic.Network.ChildSupervisor do
 
   def via(name) do
     Traffic.via_tuple(__MODULE__, name)
+  end
+
+  def stop(name) do
+    name
+    |> via()
+    |> GenServer.stop()
   end
 end

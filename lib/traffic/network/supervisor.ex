@@ -18,4 +18,14 @@ defmodule Traffic.Network.NetworkSupervisor do
 
     Supervisor.init(children, strategy: :rest_for_one)
   end
+
+  defp via(name) do
+    Traffic.via_tuple(__MODULE__, name)
+  end
+
+  def stop(name) do
+    name
+    |> via()
+    |> GenServer.stop()
+  end
 end

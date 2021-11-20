@@ -169,11 +169,11 @@ defmodule Traffic.Network.Road do
   def to_exit(:right), do: :right
 
   def update_lanes(data, lane_name, lane_to_step, _, _)
-      when lane_name == lane_to_step do
+      when lane_name != lane_to_step do
     data
   end
 
-  def update_lanes(%{road: road} = data, lane_name, lane_to_step, can_exit, road_names) do
+  def update_lanes(%{road: road} = data, lane_name, _, can_exit, road_names) do
     {lanes, exits} =
       road
       |> Map.get(lane_name)

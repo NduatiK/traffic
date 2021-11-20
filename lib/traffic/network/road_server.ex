@@ -4,10 +4,16 @@ defmodule Traffic.Network.RoadServer do
   alias Traffic.Network.Road
   alias Traffic.Network.JunctionServer
 
+  typedstruct module: Junction, enforce: true do
+    field(:junction, pid())
+    field(:color, atom())
+    field(:linked_roads, list())
+  end
+
   typedstruct module: State, enforce: true do
     # field(:id, :any)
     field(:road, Road.t())
-    field(:junction_and_colors, map())
+    field(:junction_and_colors, %{atom() => Junction.t()})
 
     field(:paused, boolean(), default: false)
   end
@@ -35,8 +41,8 @@ defmodule Traffic.Network.RoadServer do
     {:ok,
      %State{
        junction_and_colors: %{
-         left: %{junction: from, color: :red, linked_roads: []},
-         right: %{junction: to, color: :red, linked_roads: []}
+         left: %Junction{junction: from, color: :red, linked_roads: []},
+         right: %Junction{junction: to, color: :red, linked_roads: []}
        },
        road: road
      }}
@@ -165,9 +171,6 @@ defmodule Traffic.Network.RoadServer do
     {:noreply, %{state | road: road}}
   end
 
-  def invert(:right), do: :left
-  def invert(:left), do: :right
-
   @impl true
   def handle_info(:tick, %State{} = state) do
     if not state.paused do
@@ -180,9 +183,9 @@ defmodule Traffic.Network.RoadServer do
     %{left: into_left, right: _, road: road} =
       state.road
       |> Road.step(
-        :right,
+        :left,
         [{:left, state.junction_and_colors.left.color}],
-        state.junction_and_colors.right.linked_roads
+        state.junction_and_colors.left.linked_roads
       )
 
     into_left = Enum.flat_map(into_left, & &1)
@@ -190,16 +193,16 @@ defmodule Traffic.Network.RoadServer do
     if not Enum.empty?(into_left) do
       into_left
       |> Enum.each(fn vehicle ->
-        JunctionServer.receive_vehicle(state.junction_and_colors.right.junction, vehicle)
+        JunctionServer.receive_vehicle(state.junction_and_colors.left.junction, vehicle)
       end)
     end
 
     %{left: _, right: into_right2, road: road} =
       road
       |> Road.step(
-        :left,
+        :right,
         [{:right, state.junction_and_colors.right.color}],
-        state.junction_and_colors.left.linked_roads
+        state.junction_and_colors.right.linked_roads
       )
 
     into_right2 = Enum.flat_map(into_right2, & &1)

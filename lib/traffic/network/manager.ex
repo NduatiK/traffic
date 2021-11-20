@@ -11,6 +11,7 @@ defmodule Traffic.Network.Manager do
     field(:name, :string, enforce: true)
     field(:config, Traffic.Network.Config.t(), enforce: true)
     field(:graph, Graph.t())
+    field(:paused, boolean(), default: false)
   end
 
   alias Traffic.Network.ChildSupervisor
@@ -80,6 +81,12 @@ defmodule Traffic.Network.Manager do
     manager
     |> get_manager()
     |> GenServer.cast(:pause)
+  end
+
+  def get_pause_status(manager) do
+    manager
+    |> get_manager()
+    |> GenServer.call(:get_pause_status)
   end
 
   @impl true
@@ -159,6 +166,11 @@ defmodule Traffic.Network.Manager do
   end
 
   @impl true
+  def handle_call(:get_pause_status, _from, %State{} = state) do
+    {:reply, state.paused, state}
+  end
+
+  @impl true
   def handle_call(:get_driver_config, _from, %State{} = state) do
     {:reply, state.config.driver_profile_stats, state}
   end
@@ -185,7 +197,7 @@ defmodule Traffic.Network.Manager do
         nil
     end)
 
-    {:noreply, state}
+    {:noreply, %{state | paused: not state.paused}}
   end
 
   @impl true

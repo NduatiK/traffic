@@ -12,16 +12,14 @@ defmodule TrafficWeb.Components.Lofi.Lane do
   prop(flip, :boolean, default: false)
   prop(offset, :integer, default: 0)
   prop(direction, :string, default: "0")
-  prop(show, :boolean, default: false)
 
   slot(default)
 
   def lane_width, do: 30
 
   def render(assigns) do
-    # transform-origin={"#{@width / 2} 0"} transform={if @flip, do: "scale(-1, 1)"}
     ~F"""
-    <g style={"transform-origin: #{@width / 2}px 0px; transform: #{if @flip, do: "scale(-1, 1)"} "}>
+    <g style={ if @flip, do: "transform-origin: #{@width / 2}px 0px; transform:scale(-1, 1)", else: ""}>
       {#for {vehicles, index} <- Enum.with_index(@lanes)}
         {#for {vehicle, position} <- vehicles}
           <Vehicle

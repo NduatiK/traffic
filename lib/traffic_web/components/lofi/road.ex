@@ -27,6 +27,7 @@ defmodule TrafficWeb.Components.Lofi.Road do
       |> assign(assigns)
 
     {x1, y1} = JunctionServer.get_location(socket.assigns.from_junction)
+
     {x2, y2} = JunctionServer.get_location(socket.assigns.to_junction)
 
     {road, lights} = RoadServer.get_road_and_lights(socket.assigns.road_pid)
@@ -36,8 +37,11 @@ defmodule TrafficWeb.Components.Lofi.Road do
       # |> Map.from_struct()
       # |> IO.inspect(label: "r")
 
-      road
-      |> IO.inspect(label: "r")
+      # road
+      # |> IO.inspect(label: "r")
+
+      # {x1, y1}
+      # |> IO.inspect()
     end
 
     socket =
@@ -77,44 +81,47 @@ defmodule TrafficWeb.Components.Lofi.Road do
     # data[name]={@road.name}
     ~F"""
     <g
-      :if={@road}
-      style={"transform: translate(#{elem(assigns.from, 0)}px, #{elem(assigns.from, 1) - @height / 2}px) rotate(#{@angle}deg)"}
-      overflow="visible"
-    >{inspect(self())}
-      <!-- {inspect(self())} -->
-      <Lane
-        width={@length}
-        road_length={@road.length}
-        lanes={@road.right}
-        direction="right"
-        lane_width={@lane_width}
-        light={@lights.right}
-        id={inspect(@road.name) <> "right"}
-        flip
-        show={@road.name == :road_default_0}
-        road_name={inspect(@road.name)}
-        offset={1}
+    :if={@road}
+    style={"transform: translate(#{elem(assigns.from, 0)}px, #{elem(assigns.from, 1) - @height / 2}px) rotate(#{@angle}deg)"}
+    overflow="visible"
+    >
+    <!--
+    {inspect(self())}
+    -->
+
+    <Lane
+      width={@length}
+      road_length={@road.length}
+      lanes={@road.right}
+      direction="right"
+      lane_width={@lane_width}
+      light={@lights.right}
+      id={inspect(@road.name) <> "right"}
+      road_name={inspect(@road.name)}
+      offset={1}
       />
       <LaneDivider width={@length} lane_width={@lane_width} stroke_width={3} solid offset={4} />
       <Lane
-        width={@length}
-        show={@road.name == :road_default_0}
-        road_length={@road.length}
-        lanes={@road.left}
-        light={@lights.left}
-        road_name={inspect(@road.name)}
-        direction="left"
-        lane_width={@lane_width}
-        id={Atom.to_string(@road.name) <> "left"}
-        offset={8}
-      />
-      <g class="z-10"><rect width={5} height={4} fill={render_light(@lights.left)} /></g>
-      <g class="z-10"><rect width={5} height={4} x={@length - 5} fill={render_light(@lights.right)} /></g>
+      flip
+      width={@length}
+      road_length={@road.length}
+      lanes={@road.left}
+      light={@lights.left}
+      road_name={inspect(@road.name)}
+      direction="left"
+      lane_width={@lane_width}
+      id={Atom.to_string(@road.name) <> "left"}
+      offset={8}
+    />
+    <g class="z-10"><rect width={5} height={4} fill={render_light(@lights.left)} /></g>
+    <g class="z-10"><rect width={5} height={4} x={@length - 5} fill={render_light(@lights.right)} /></g>
+    <text x="0" y="0" class="text-sm">L</text>
     </g>
     """
 
+    # <text x="0" y="0" class="text-sm">L{Atom.to_string(@road.name) }{inspect(@road_pid)}</text>
+
     # s
-    # <text x="0" y="0" class="text-sm">L</text>
   end
 
   def render_light(:red), do: "red"

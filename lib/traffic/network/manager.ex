@@ -29,7 +29,7 @@ defmodule Traffic.Network.Manager do
   def init(state) do
     state = %State{
       name: state.name,
-      graph: Graph.new(type: :undirected),
+      graph: Graph.new(type: :directed),
       config: state.config
     }
 
@@ -75,6 +75,12 @@ defmodule Traffic.Network.Manager do
     |> GenServer.cast({:set_driver_config, config})
   end
 
+  def pause(manager) do
+    manager
+    |> get_manager()
+    |> GenServer.cast(:pause)
+  end
+
   @impl true
   def handle_call({:start_road, junction1, junction2}, _from, %State{} = state) do
     {state, id} = increase_counter(state, :road)
@@ -96,11 +102,11 @@ defmodule Traffic.Network.Manager do
     |> Graph.edges(junction1)
     |> Enum.each(fn edge ->
       if edge.v1 == junction1 do
-        RoadServer.add_linked_road(edge.label, :left, pid)
-        RoadServer.add_linked_road(pid, :right, edge.label)
+        RoadServer.add_linked_road(edge.label, {:left, :left}, pid)
+        RoadServer.add_linked_road(pid, {:left, :left}, edge.label)
       else
-        RoadServer.add_linked_road(edge.label, :right, pid)
-        RoadServer.add_linked_road(pid, :left, edge.label)
+        RoadServer.add_linked_road(edge.label, {:right, :left}, pid)
+        RoadServer.add_linked_road(pid, {:left, :right}, edge.label)
       end
     end)
 
@@ -108,11 +114,11 @@ defmodule Traffic.Network.Manager do
     |> Graph.edges(junction2)
     |> Enum.each(fn edge ->
       if edge.v2 == junction2 do
-        RoadServer.add_linked_road(edge.label, :right, pid)
-        RoadServer.add_linked_road(pid, :left, edge.label)
+        RoadServer.add_linked_road(edge.label, {:right, :right}, pid)
+        RoadServer.add_linked_road(pid, {:right, :right}, edge.label)
       else
-        RoadServer.add_linked_road(edge.label, :left, pid)
-        RoadServer.add_linked_road(pid, :right, edge.label)
+        RoadServer.add_linked_road(edge.label, {:left, :right}, pid)
+        RoadServer.add_linked_road(pid, {:right, :left}, edge.label)
       end
     end)
 
@@ -159,6 +165,22 @@ defmodule Traffic.Network.Manager do
        state
        | config: %{config | driver_profile_stats: driver_config}
      }}
+  end
+
+  @impl true
+  def handle_cast(:pause, %State{} = state) do
+    state.name
+    |> ChildSup.via()
+    |> DynamicSupervisor.which_children()
+    |> Enum.each(fn
+      {_, pid, :worker, _} ->
+        GenServer.cast(pid, :pause)
+
+      _ ->
+        nil
+    end)
+
+    {:noreply, state}
   end
 
   @impl true

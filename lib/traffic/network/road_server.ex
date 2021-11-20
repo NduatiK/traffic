@@ -9,6 +9,7 @@ defmodule Traffic.Network.RoadServer do
     field(:road, Road.t())
     field(:junction_and_colors, map())
 
+    field(:paused, boolean(), default: false)
     field(:counter, integer(), default: 0)
     # field(:x, integer())
     # field(:y, integer())
@@ -56,12 +57,16 @@ defmodule Traffic.Network.RoadServer do
     GenServer.call(server, :get_road_and_lights)
   end
 
-  def add_linked_road(server, side, road) do
-    GenServer.cast(server, {:add_linked_road, side, road})
+  def add_linked_road(server, {side, road_side}, road) do
+    GenServer.cast(server, {:add_linked_road, {side, road_side}, road})
   end
 
   def receive_vehicle(server, side, lane_no, vehicle) do
     GenServer.cast(server, {:receive_vehicle, side, lane_no, vehicle})
+  end
+
+  def pause(server) do
+    GenServer.cast(server, :pause)
   end
 
   # @impl true
@@ -87,20 +92,22 @@ defmodule Traffic.Network.RoadServer do
   end
 
   @impl true
-  def handle_cast({:add_linked_road, side, road}, %State{} = state) do
-    # lights = get_lights(state)
-    # {:reply, {road, lights}, state}
-    # junction_and_colors: %{
-    #   left: %{junction: from, color: :red, linked_roads: []},
-    #   right: %{junction: to, color: :red, linked_roads: []}
-    # }
+  def handle_cast(:pause, %State{} = state) do
+    if state.paused do
+      Process.send_after(self(), :tick, 10)
+    end
 
+    {:noreply, %{state | paused: not state.paused}}
+  end
+
+  @impl true
+  def handle_cast({:add_linked_road, {my_side, road_side}, road}, %State{} = state) do
     junction_and_colors =
       state.junction_and_colors
-      |> Map.update!(side, fn map ->
+      |> Map.update!(my_side, fn map ->
         map
         |> Map.update!(:linked_roads, fn roads ->
-          [{road, invert(side)} | roads]
+          [{road, road_side} | roads]
         end)
       end)
 
@@ -143,14 +150,19 @@ defmodule Traffic.Network.RoadServer do
 
   @impl true
   def handle_info(:tick, %State{} = state) do
-    Process.send_after(self(), :tick, 10)
+    if not state.paused do
+      Process.send_after(self(), :tick, 10)
+    end
+
+    # IO.inspect(state.road.name)
+    # IO.inspect(state.junction_and_colors)
 
     %{left: into_left, right: _, road: road} =
       state.road
       |> Road.step(
         :right,
         [{:left, state.junction_and_colors.left.color}],
-        state.junction_and_colors.left.linked_roads
+        state.junction_and_colors.right.linked_roads
       )
 
     into_left = Enum.flat_map(into_left, & &1)
@@ -167,7 +179,7 @@ defmodule Traffic.Network.RoadServer do
       |> Road.step(
         :left,
         [{:right, state.junction_and_colors.right.color}],
-        state.junction_and_colors.right.linked_roads
+        state.junction_and_colors.left.linked_roads
       )
 
     into_right2 = Enum.flat_map(into_right2, & &1)
@@ -181,13 +193,14 @@ defmodule Traffic.Network.RoadServer do
 
     Phoenix.PubSub.broadcast(Traffic.PubSub, "road_#{inspect(self())}", {
       __MODULE__,
-      %{pid: self()}
+      %{pid: self(), counter: state.counter}
     })
 
     {:noreply,
      %{
        state
-       | road: road
+       | road: road,
+         counter: state.counter + 1
      }}
   end
 
@@ -226,10 +239,4 @@ defmodule Traffic.Network.RoadServer do
     end)
     |> Enum.into(%{})
   end
-
-  # @impl true
-  # def handle_info(:tick, %{graph: network, config: config} = state) do
-  #   Process.send_after(self(), :tick, 10)
-  #   {:noreply, %{state | graph: Network.step(network, config)}}
-  # end
 end

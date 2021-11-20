@@ -2,6 +2,7 @@ defmodule Traffic.Network.JunctionServer do
   use GenServer
   use TypedStruct
   alias Traffic.Network.RoadServer
+  alias Traffic.Network.Junction
 
   typedstruct module: State, enforced: true do
     field(:id, :any)
@@ -10,6 +11,8 @@ defmodule Traffic.Network.JunctionServer do
     field(:x, integer())
     field(:y, integer())
     field(:vehicles, list(), default: [])
+    field(:paused, boolean(), default: false)
+    field :last_switch, integer()
   end
 
   # Client
@@ -53,8 +56,19 @@ defmodule Traffic.Network.JunctionServer do
   end
 
   @impl true
+  def handle_cast(:pause, %State{} = state) do
+    Process.send_after(self(), :tick, 10)
+
+    {:noreply, %{state | paused: not state.paused}}
+  end
+
+  @impl true
   def handle_info(:tick, %State{} = state) do
-    Process.send_after(self(), :tick, 5000)
+    if not state.paused do
+      Process.send_after(self(), :tick, 5000)
+    end
+
+    # Junction.update_lights(road, timings, config.junction_strategy)
 
     color = if(state.color == :red, do: :green, else: :red)
 

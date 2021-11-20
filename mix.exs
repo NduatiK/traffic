@@ -20,7 +20,8 @@ defmodule Traffic.MixProject do
   def application do
     [
       mod: {Traffic.Application, []},
-      extra_applications: [:logger, :runtime_tools, :observer]
+      # extra_applications: [:logger, :runtime_tools, :observer]
+      extra_applications: [:logger, :runtime_tools]
     ]
   end
 

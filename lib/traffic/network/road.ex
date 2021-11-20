@@ -79,8 +79,8 @@ defmodule Traffic.Network.Road do
       length: 10,
       right: [
         [
-          {Vehicle.random(driver_profiles), 0},
-          {Vehicle.random(driver_profiles), 3}
+          # {Vehicle.random(driver_profiles), 0},
+          # {Vehicle.random(driver_profiles), 3}
           # {Vehicle.random(driver_profiles), 5},
           # {Vehicle.random(driver_profiles), 6},
           # {Vehicle.random(driver_profiles), 9}
@@ -103,12 +103,12 @@ defmodule Traffic.Network.Road do
         #   {Vehicle.random(driver_profiles), 9}
         # ],
         [
-          {Vehicle.random(driver_profiles), 0},
+          # {Vehicle.random(driver_profiles), 0},
           # {Vehicle.random(driver_profiles), 1},
           # {Vehicle.random(driver_profiles), 2},
           # {Vehicle.random(driver_profiles), 4},
           # {Vehicle.random(driver_profiles), 8},
-          {Vehicle.random(driver_profiles), 9}
+          # {Vehicle.random(driver_profiles), 9}
         ]
       ]
     }

@@ -1,5 +1,5 @@
 defmodule TrafficWeb.Components.Lofi.Vehicle do
-  use Surface.LiveComponent
+  use Surface.Component
   prop(class, :string, default: "items-center")
   prop(flip, :boolean, default: false)
   prop(color, :string, default: "blue")

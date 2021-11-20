@@ -7,28 +7,6 @@ defmodule TrafficWeb.Components.Lofi.RoadNetwork do
 
   prop(network, :map)
   prop(network_id, :any)
-  data(junctions, :list, default: [])
-  data(roads, :list, default: [])
-
-  def update(assigns, socket) do
-    {junctions, roads} =
-      if connected?(socket) do
-        # Traffic.Network.Manager.get_graph(socket.assigns.network_id)
-        # IO.inspect(assigns.network)
-
-        {[], []}
-        # Traffic.Network.Server.get_compiled(Traffic.Network.Server)
-      else
-        {[], []}
-      end
-
-    socket =
-      socket
-      |> assign(assigns)
-      |> assign(junctions: junctions, roads: roads)
-
-    {:ok, socket}
-  end
 
   @impl true
   def mount(socket) do
@@ -41,7 +19,8 @@ defmodule TrafficWeb.Components.Lofi.RoadNetwork do
     <svg x="0px" y="0px">
       {#for junction <- Graph.vertices(@network)}
         <Junction id={"junction_#{inspect(junction)}"} network_id={@network_id} junction={junction} />
-      {/for} {#for road <- Graph.edges(@network)}
+      {/for}
+      {#for road <- Graph.edges(@network)}
         <Road
           id={"road_#{inspect(road.label)}"}
           road_pid={road.label}

@@ -68,9 +68,7 @@ defmodule TrafficWeb.Pages.LofiMap do
   def handle_info({Traffic.Network.RoadServer, state}, socket) do
     send_update(Road,
       id: "road_#{inspect(state.pid)}",
-      counter: state
-      # color: state.color,
-      # road: state.pid
+      counter: state.counter
     )
 
     # IO.puts("HANDLE Road BROADCAST FOR #{inspect(state.pid)}")

@@ -403,13 +403,15 @@ end
 * [x] Visualize road network in browser (SVG)
 * [x] Implement network of roads and junctions
 * [x] Complete implementing driver profiles and use them for new vehicles
-* [ ] Add signal optimization
-  * [ ] Multiple strategies
-    * [ ] Naive
-    * [ ] Genetic Algorithms?
+* [x] Add signal optimization
+  * [x] Multiple strategies
+    * [x] Naive
 
 ---
 
+* [ ] Add signal optimization
+  * [ ] Multiple strategies
+    * [ ] Genetic Algorithms?
 * [ ] Complete random vehicle generation and removal based on road usage patterns
 * [ ] Add route planning based on A-star to provide random start and end points for cars
 * [ ] Add lane switching
@@ -418,9 +420,8 @@ end
 
 Work on report alongside this
 
-
 Start the simulation supervisor
-- Start a default network supervisor
-- It starts the network manager
-  - It can start roads, junctions and vehicles
-  
+
+* Start a default network supervisor
+* It starts the network manager
+  * It can start roads, junctions and vehicles

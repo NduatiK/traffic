@@ -11,22 +11,43 @@ defmodule TrafficWeb.Components.Lofi.Vehicle do
 
   def render(assigns) do
     ~F"""
-    <circle
-      cx={round(@x)}
-      cy={round(@y)}
-      r={3}
-      stroke={render_speed(@vehicle)}
-      stroke-width={2}
-      fill={render_speed(@vehicle)}
+    <svg
+    version="1.1"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns="http://www.w3.org/2000/svg"
+    data[vehicle]="true"
+    >
+    <rect
+    x={round(@x)}
+    y={round(@y)}
+    width={3}
+    height={3}
+    stroke={render_speed(@vehicle)}
+    stroke-width={2}
+    fill={render_speed(@vehicle)}
     />
+    </svg>
     """
   end
+
+  # def render(assigns) do
+  #   ~F"""
+  #   <circle
+  #     cx={round(@x)}
+  #     cy={round(@y)}
+  #     r={3}
+  #     stroke={render_speed(@vehicle)}
+  #     stroke-width={2}
+  #     fill={render_speed(@vehicle)}
+  #   />
+  #   """
+  # end
 
   def render_speed(vehicle) do
     cond do
       vehicle.speed > 2 -> "gray"
       vehicle.speed > 1 -> "orange"
-      true -> "green"
+      true -> "blue"
     end
   end
 end

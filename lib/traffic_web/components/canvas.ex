@@ -23,6 +23,9 @@ defmodule TrafficWeb.Components.Canvas do
         class="w-screen h-screen fixed top-0 right-0 left-0 bottom-0"
         viewBox={"#{-@padding} #{-@padding} #{@width + @padding} #{@height + @padding}"}
         xml:space="preserve"
+        version="1.1"
+        xmlns:xlink="http://www.w3.org/1999/xlink"
+        xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
           {{:safe, Vehicles.Mustang.svg()}} {{:safe, Vehicles.Bus.svg()}}

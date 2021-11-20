@@ -19,8 +19,7 @@ defmodule TrafficWeb.Components.Lofi.RoadNetwork do
     <svg x="0px" y="0px">
       {#for junction <- Graph.vertices(@network)}
         <Junction id={"junction_#{inspect(junction)}"} network_id={@network_id} junction={junction} />
-      {/for}
-      {#for road <- Graph.edges(@network)}
+      {/for} {#for road <- Graph.edges(@network)}
         <Road
           id={"road_#{inspect(road.label)}"}
           road_pid={road.label}

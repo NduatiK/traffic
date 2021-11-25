@@ -13,46 +13,38 @@ defmodule TrafficWeb.Pages.LofiMap do
   data network_id, :atom
 
   data show_driver_distributions, :boolean, default: true
-  data driver_distributions, :map, default: %{}
-
-  @rate round(1000 / 24)
-  # @rate round(1000 / 24)
-  # @rate round(48000 / 24)
+  data driver_distributions, :list, default: []
 
   @impl true
   def mount(params, _session, socket) do
-    socket =
-      case validate_network_id(socket, params) do
-        :error ->
-          socket
-          |> redirect(Routes.page_path(socket, :index))
-          |> put_flash(:error, "The simulation #{params["id"]} does not exist")
+    case validate_network_id(socket, params) do
+      :error ->
+        socket
+        |> redirect(Routes.page_path(socket, :index))
+        |> put_flash(:error, "The simulation #{params["id"]} does not exist")
+        |> then(&{:ok, &1})
 
-        {network_id, socket} ->
-          socket
-          |> assign(graph: Manager.get_graph(network_id))
-          |> assign(
-            driver_distributions:
-              Manager.get_driver_config(network_id)
-              |> Map.to_list()
-          )
-          |> assign(paused: Manager.get_pause_status(network_id))
-      end
-
-    {:ok, socket}
+      {network_id, socket} ->
+        socket
+        |> assign(graph: Manager.get_graph(network_id))
+        |> assign(
+          driver_distributions:
+            network_id
+            |> Manager.get_driver_config()
+            |> Map.to_list()
+        )
+        |> assign(paused: Manager.get_pause_status(network_id))
+        |> then(&{:ok, &1})
+    end
   end
 
   @impl true
-  def handle_params(a, url, socket) do
-    %URI{
-      path: path
-    } = URI.parse(url)
+  def handle_params(_params, url, socket) do
+    %URI{path: path} = URI.parse(url)
 
-    socket =
-      socket
-      |> assign(path: path)
-
-    {:noreply, socket}
+    socket
+    |> assign(path: path)
+    |> then(&{:noreply, &1})
   end
 
   @impl true
@@ -63,8 +55,8 @@ defmodule TrafficWeb.Pages.LofiMap do
       junction: state.pid
     )
 
-    # IO.puts("HANDLE BROADCAST FOR #{inspect(state.pid)}")
-    {:noreply, socket}
+    socket
+    |> then(&{:noreply, &1})
   end
 
   @impl true
@@ -73,8 +65,8 @@ defmodule TrafficWeb.Pages.LofiMap do
       id: "road_#{inspect(state.pid)}"
     )
 
-    # IO.puts("HANDLE Road BROADCAST FOR #{inspect(state.pid)}")
-    {:noreply, socket}
+    socket
+    |> then(&{:noreply, &1})
   end
 
   @impl true
@@ -128,21 +120,21 @@ defmodule TrafficWeb.Pages.LofiMap do
   def handle_event("reset_network", _, socket) do
     Manager.reset_network(socket.assigns.network_id)
 
-    {:noreply,
-     socket
-     |> redirect(to: socket.assigns.path)}
+    socket
+    |> redirect(to: socket.assigns.path)
+    |> then(&{:noreply, &1})
   end
 
   @impl true
   def handle_event("pause_network", _, socket) do
     Manager.pause(socket.assigns.network_id)
 
-    {:noreply,
-     socket
-     |> assign(
-       :paused,
-       Manager.get_pause_status(socket.assigns.network_id)
-     )}
+    socket
+    |> assign(
+      :paused,
+      Manager.get_pause_status(socket.assigns.network_id)
+    )
+    |> then(&{:noreply, &1})
   end
 
   @impl true
@@ -161,9 +153,9 @@ defmodule TrafficWeb.Pages.LofiMap do
 
     Manager.set_driver_config(socket.assigns.network_id, driver_distributions)
 
-    {:noreply,
-     socket
-     |> assign(driver_distributions: driver_distributions)}
+    socket
+    |> assign(driver_distributions: driver_distributions)
+    |> then(&{:noreply, &1})
   end
 
   def validate_network_id(socket, params) do

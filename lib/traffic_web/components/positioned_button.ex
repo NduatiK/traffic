@@ -13,8 +13,8 @@ defmodule TrafficWeb.Components.PositionedButton do
       class="rounded p-2 bg-white shadow absolute"
       style={top: "#{@top / 4}rem", right: "#{@right / 4}rem"}
       :on-click={@click}
-      >
-    <#slot />
+    >
+      <#slot />
     </button>
     """
   end

@@ -43,33 +43,33 @@ defmodule Traffic.Network do
     Agent.start_link(fn -> %Junction{roads: %{}, x: x, y: y} end)
   end
 
-  def build_network(config) do
-    {:ok, road_1} = start_road(:road_1, config)
-    {:ok, road_2} = start_road(:road_2, config)
-    {:ok, road_3} = start_road(:road_3, config)
-    {:ok, road_4} = start_road(:road_4, config)
-    {:ok, road_5} = start_road(:road_5, config)
-    {:ok, road_6} = start_road(:road_6, config)
+  # def build_network(config) do
+  #   {:ok, road_1} = start_road(:road_1, config)
+  #   {:ok, road_2} = start_road(:road_2, config)
+  #   {:ok, road_3} = start_road(:road_3, config)
+  #   {:ok, road_4} = start_road(:road_4, config)
+  #   {:ok, road_5} = start_road(:road_5, config)
+  #   {:ok, road_6} = start_road(:road_6, config)
 
-    {:ok, junction_1} = start_junction(100, 100)
-    {:ok, junction_2} = start_junction(500, 100)
-    {:ok, junction_3} = start_junction(700, 300)
-    {:ok, junction_4} = start_junction(500, 500)
-    {:ok, junction_5} = start_junction(100, 500)
+  #   {:ok, junction_1} = start_junction(100, 100)
+  #   {:ok, junction_2} = start_junction(500, 100)
+  #   {:ok, junction_3} = start_junction(700, 300)
+  #   {:ok, junction_4} = start_junction(500, 500)
+  #   {:ok, junction_5} = start_junction(100, 500)
 
-    Graph.create()
-    |> Graph.add_junction(junction_1)
-    |> Graph.add_junction(junction_2)
-    |> Graph.add_junction(junction_3)
-    |> Graph.add_junction(junction_4)
-    |> Graph.add_junction(junction_5)
-    |> Graph.add_road(road_1, junction_1, junction_2)
-    |> Graph.add_road(road_2, junction_2, junction_3)
-    |> Graph.add_road(road_3, junction_3, junction_4)
-    |> Graph.add_road(road_4, junction_4, junction_5)
-    |> Graph.add_road(road_5, junction_5, junction_1)
-    |> Graph.add_road(road_6, junction_4, junction_2)
-  end
+  #   Graph.create()
+  #   |> Graph.add_junction(junction_1)
+  #   |> Graph.add_junction(junction_2)
+  #   |> Graph.add_junction(junction_3)
+  #   |> Graph.add_junction(junction_4)
+  #   |> Graph.add_junction(junction_5)
+  #   |> Graph.add_road(road_1, junction_1, junction_2)
+  #   |> Graph.add_road(road_2, junction_2, junction_3)
+  #   |> Graph.add_road(road_3, junction_3, junction_4)
+  #   |> Graph.add_road(road_4, junction_4, junction_5)
+  #   |> Graph.add_road(road_5, junction_5, junction_1)
+  #   |> Graph.add_road(road_6, junction_4, junction_2)
+  # end
 
   # def step_graph
 

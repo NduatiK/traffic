@@ -20,8 +20,7 @@ defmodule Traffic.MixProject do
   def application do
     [
       mod: {Traffic.Application, []},
-      # extra_applications: [:logger, :runtime_tools, :observer]
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools, :observer]
     ]
   end
 
@@ -57,7 +56,8 @@ defmodule Traffic.MixProject do
       {:surface_formatter, "~> 0.6.0"},
       # {:surface_heroicons, "~> 0.5.2"},
       {:surface, "~> 0.6", override: true},
-      {:desktop, github: "elixir-desktop/desktop", tag: "v1.3.1"}
+      {:desktop, github: "elixir-desktop/desktop", tag: "v1.3.1"},
+      {:dialyxir, "~> 1.0", only: [:dev], runtime: false}
     ]
   end
 

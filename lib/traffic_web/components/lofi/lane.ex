@@ -18,19 +18,20 @@ defmodule TrafficWeb.Components.Lofi.Lane do
   def lane_width, do: 30
 
   def render(assigns) do
+    # vehicle={vehicle}
     ~F"""
-    <g style={ if @flip, do: "transform-origin: #{@width / 2}px 0px; transform:scale(-1, 1)", else: ""}>
+    <g style={if @flip, do: "transform-origin: #{@width / 2}px 0px; transform:scale(-1, 1)", else: ""}>
       {#for {vehicles, index} <- Enum.with_index(@lanes)}
         {#for {vehicle, position} <- vehicles}
           <Vehicle
-            vehicle={vehicle}
             flip={@flip}
             x={position / @road_length * @width}
             y={3 + @offset + index * 2}
             color="orange"
           />
         {/for}
-      {/for} <rect width={@width} height={10} fill="transparent" />
+      {/for}
+      <rect width={@width} height={10} fill="transparent" />
     </g>
     """
   end

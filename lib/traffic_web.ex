@@ -83,8 +83,6 @@ defmodule TrafficWeb do
         layout: {TrafficWeb.LayoutView, "live.html"}
 
       import Phoenix.LiveView
-      # import TrafficWeb.LiveHelpers
-      # alias AttendantWeb.Components.{Row, Column, Icons, Button, Link}
       unquote(view_helpers())
     end
   end

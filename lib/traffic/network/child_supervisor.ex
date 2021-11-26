@@ -23,8 +23,6 @@ defmodule Traffic.Network.ChildSupervisor do
     DynamicSupervisor.start_child(supervisor, spec)
   end
 
-  @spec start_vehicle(atom | pid | {atom, any} | {:via, atom, any}, any, any, any) ::
-          :ignore | {:error, any} | {:ok, pid} | {:ok, pid, any}
   def start_vehicle(supervisor, id, name, config) do
     spec = {VehicleServer, [id: id, name: name, config: config]}
     DynamicSupervisor.start_child(supervisor, spec)

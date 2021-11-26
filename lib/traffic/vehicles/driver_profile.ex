@@ -1,6 +1,7 @@
 defmodule Traffic.Vehicles.DriverProfile do
   use TypedStruct
   alias __MODULE__
+  alias Traffic.Network.Config
 
   typedstruct do
     # in Km.h
@@ -89,6 +90,9 @@ defmodule Traffic.Vehicles.DriverProfile do
     }
   end
 
+  def gauss(%DriverProfile{mean_speed: mean, speed_std_dev: std}),
+    do: max(0, :rand.normal(mean, std))
+
   defp gauss(mean, std), do: max(0, :rand.normal(mean, std))
 
   @profiles [
@@ -119,6 +123,10 @@ defmodule Traffic.Vehicles.DriverProfile do
   If the stat is unassigned, we give it 0.5
   If all the stats are 0, we give each 0.5
   """
+  def random(%{driver_profile_stats: stats}) do
+    random(stats)
+  end
+
   def random(stats) do
     profile =
       if invalid_stats?(stats) do

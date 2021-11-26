@@ -1,6 +1,8 @@
 defmodule Traffic.Network.Server do
   use GenServer
-  alias Traffic.Network.{Road, Junction, Graph}
+  alias Traffic.Network.Road
+  alias Traffic.Network.Junction
+  alias Traffic.Network.Graph
   alias Traffic.Network
 
   # Client
@@ -39,7 +41,7 @@ defmodule Traffic.Network.Server do
 
     {:ok,
      %{
-       graph: Network.build_network(config),
+       graph: Network.build_network(:name),
        config: config
      }}
   end

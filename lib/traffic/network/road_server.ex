@@ -3,6 +3,8 @@ defmodule Traffic.Network.RoadServer do
   use TypedStruct
   alias Traffic.Network.Road
   alias Traffic.Network.JunctionServer
+  alias Traffic.Vehicles.VehicleServer
+  alias Traffic.Network.Manager
 
   typedstruct module: Junction, enforce: true do
     field(:junction, pid())
@@ -11,10 +13,9 @@ defmodule Traffic.Network.RoadServer do
   end
 
   typedstruct module: State, enforce: true do
-    # field(:id, :any)
+    field(:id, integer())
     field(:road, Road.t())
     field(:junction_and_colors, %{atom() => Junction.t()})
-
     field(:paused, boolean(), default: false)
   end
 
@@ -28,18 +29,24 @@ defmodule Traffic.Network.RoadServer do
   # Server (callbacks)
   @impl true
   def init(opts) do
-    Process.send_after(self(), :tick, :rand.uniform(500))
-
+    preload(Keyword.get(opts, :name), Keyword.get(opts, :id))
     from = Keyword.get(opts, :junction1)
     to = Keyword.get(opts, :junction2)
 
-    road = Road.preloaded(:"road_#{Keyword.get(opts, :name)}_#{Keyword.get(opts, :id)}")
+    length = JunctionServer.get_distance(from, to)
+
+    road =
+      Road.new(
+        :"road_#{Keyword.get(opts, :name)}_#{Keyword.get(opts, :id)}",
+        length
+      )
 
     TrafficWeb.Endpoint.subscribe("junction_#{inspect(from)}")
     TrafficWeb.Endpoint.subscribe("junction_#{inspect(to)}")
 
     {:ok,
      %State{
+       id: Keyword.get(opts, :id),
        junction_and_colors: %{
          left: %Junction{junction: from, color: :red, linked_roads: []},
          right: %Junction{junction: to, color: :red, linked_roads: []}
@@ -50,6 +57,10 @@ defmodule Traffic.Network.RoadServer do
 
   def get_road(server) do
     GenServer.call(server, :get_road)
+  end
+
+  def whats_ahead?(server, lane, position, distance \\ 40) do
+    GenServer.call(server, {:whats_ahead?, lane, position, distance})
   end
 
   def get_light(server) do
@@ -68,18 +79,21 @@ defmodule Traffic.Network.RoadServer do
     GenServer.cast(server, {:add_linked_road, {side, road_side}, road})
   end
 
-  def receive_vehicle(server, side, lane_no, vehicle) do
-    GenServer.cast(server, {:receive_vehicle, side, lane_no, vehicle})
+  def receive_vehicle(server, from_side, lane_no, vehicle) do
+    GenServer.cast(server, {:receive_vehicle, from_side, lane_no, vehicle})
+  end
+
+  def vehicle_moved(server, vehicle, lane, new_position, new_speed) do
+    GenServer.cast(server, {:vehicle_moved, vehicle, lane, new_position, new_speed})
+  end
+
+  def send_into_junction(server, vehicle, lane) do
+    GenServer.cast(server, {:send_into_junction, vehicle, lane})
   end
 
   def pause(server) do
     GenServer.cast(server, :pause)
   end
-
-  # @impl true
-  # def handle_call(:get_graph, _from, %{graph: network} = state) do
-  #   {:reply, network, state}
-  # end
 
   @impl true
   def handle_call(:get_road, _from, %{road: road} = state) do
@@ -99,12 +113,17 @@ defmodule Traffic.Network.RoadServer do
   end
 
   @impl true
-  def handle_cast(:pause, %State{} = state) do
-    if state.paused do
-      Process.send_after(self(), :tick, 10)
-    end
+  def handle_call(
+        {:whats_ahead?, lane, position, distance},
+        _from,
+        %State{} = state
+      ) do
+    visual_info =
+      []
+      |> maybe_add_junction_info(state, position, lane, distance)
+      |> maybe_add_vehicle_info(state, position, lane, distance)
 
-    {:noreply, %{state | paused: not state.paused}}
+    {:reply, visual_info, state}
   end
 
   @impl true
@@ -142,13 +161,44 @@ defmodule Traffic.Network.RoadServer do
   end
 
   @impl true
-  def handle_cast({:receive_vehicle, side, lane_no, vehicle}, state) do
-    # future_road: {#PID<0.703.0>, :left, 0},
-    # vehicle: %Traffic.Vehicles.Vehicle{
+  def handle_cast({:send_into_junction, vehicle, lane}, %State{} = state) do
+    road = Road.remove_vehicle(state.road, vehicle, lane)
 
+    {target, side} = Enum.random(state.junction_and_colors[lane].linked_roads)
+
+    vehicle_data =
+      %{future_road: {target, side, 0}, vehicle: vehicle}
+      |> IO.inspect()
+
+    JunctionServer.receive_vehicle(state.junction_and_colors[lane].junction, vehicle_data)
+
+    {:noreply, %{state | road: road}}
+  end
+
+  @impl true
+  def handle_cast({:vehicle_moved, vehicle, lane, new_position, new_speed}, %State{} = state) do
+    road = Road.update_position_and_speed(state.road, vehicle, lane, new_position, new_speed)
+
+    Phoenix.PubSub.broadcast(Traffic.PubSub, "road_#{inspect(self())}", {
+      __MODULE__,
+      %{pid: self()}
+    })
+
+    {:noreply, %{state | road: road}}
+  end
+
+  @impl true
+  def handle_cast({:receive_vehicle, side, lane_no, vehicle}, %State{} = state) do
     lane_count = Enum.count(Map.from_struct(state.road)[side])
 
-    vehicles = %{lane_no => [vehicle]}
+    vehicles = %{lane_no => [%{vehicle: vehicle, speed: 0}]}
+
+    VehicleServer.send_road_details(vehicle,
+      road: self(),
+      position: 0,
+      lane: side,
+      road_length: state.road.length
+    )
 
     road =
       Road.join_road(
@@ -163,67 +213,12 @@ defmodule Traffic.Network.RoadServer do
         |> Enum.map(&elem(&1, 1))
       )
 
-    road
-    |> Map.from_struct()
-
-    # |> IO.inspect()
-
     {:noreply, %{state | road: road}}
   end
 
   @impl true
-  def handle_info(:tick, %State{} = state) do
-    if not state.paused do
-      Process.send_after(self(), :tick, 10)
-    end
-
-    # IO.inspect(state.road.name)
-    # IO.inspect(state.junction_and_colors)
-
-    %{left: into_left, right: _, road: road} =
-      state.road
-      |> Road.step(
-        :left,
-        [{:left, state.junction_and_colors.left.color}],
-        state.junction_and_colors.left.linked_roads
-      )
-
-    into_left = Enum.flat_map(into_left, & &1)
-
-    if not Enum.empty?(into_left) do
-      into_left
-      |> Enum.each(fn vehicle ->
-        JunctionServer.receive_vehicle(state.junction_and_colors.left.junction, vehicle)
-      end)
-    end
-
-    %{left: _, right: into_right2, road: road} =
-      road
-      |> Road.step(
-        :right,
-        [{:right, state.junction_and_colors.right.color}],
-        state.junction_and_colors.right.linked_roads
-      )
-
-    into_right2 = Enum.flat_map(into_right2, & &1)
-
-    if not Enum.empty?(into_right2) do
-      into_right2
-      |> Enum.each(fn vehicle ->
-        JunctionServer.receive_vehicle(state.junction_and_colors.right.junction, vehicle)
-      end)
-    end
-
-    Phoenix.PubSub.broadcast(Traffic.PubSub, "road_#{inspect(self())}", {
-      __MODULE__,
-      %{pid: self()}
-    })
-
-    {:noreply,
-     %{
-       state
-       | road: road
-     }}
+  def handle_info(_, state) do
+    {:noreply, state}
   end
 
   defp get_lights(state) do
@@ -232,5 +227,61 @@ defmodule Traffic.Network.RoadServer do
       {side, data.color}
     end)
     |> Enum.into(%{})
+  end
+
+  defp maybe_add_junction_info(visual_info, state, position, lane, distance) do
+    if state.road.length - position > distance do
+      visual_info
+    else
+      color =
+        state.junction_and_colors
+        |> Map.get(lane)
+        |> Map.get(:color)
+
+      [{:junction, state.road.length - position, color} | visual_info]
+    end
+  end
+
+  defp maybe_add_vehicle_info(visual_info, state, position, lane, distance) do
+    case Road.vehicles_ahead_of(state.road, position, lane, distance) do
+      [] ->
+        visual_info
+
+      [lead] ->
+        {speed, lead_position, _pid} = lead
+        [{:lead_vehicle, speed, lead_position - position} | visual_info]
+
+      [lead | other] ->
+        {speed, lead_position, _pid} = lead
+
+        ave_speed =
+          other
+          |> Enum.map(fn {speed, _, _} -> speed end)
+          |> Enum.sum()
+          |> Kernel./(Enum.count(other))
+
+        [
+          {:lead_vehicle, speed, lead_position - position},
+          {:pack_vehicles, ave_speed}
+          | visual_info
+        ]
+    end
+  end
+
+  defp preload(name, id) do
+    me = self()
+
+    if id == 0 do
+      Task.async(fn ->
+        :timer.sleep(1000)
+        {:ok, pid} = Manager.start_vehicle(name)
+        # {:ok, pid1} = Manager.start_vehicle(name)
+        # {:ok, pid2}=Manager.start_vehicle(name)
+        # {:ok, pid3}=Manager.start_vehicle(name)
+
+        __MODULE__.receive_vehicle(me, :left, 0, pid)
+        # __MODULE__.receive_vehicle(me, :right, 0, pid1)
+      end)
+    end
   end
 end

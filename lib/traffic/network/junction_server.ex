@@ -29,7 +29,6 @@ defmodule Traffic.Network.JunctionServer do
     )
   end
 
-  # Server (callbacks)
   @impl true
   def init(opts) do
     Process.send_after(self(), :tick, 100 + :rand.uniform(5000))
@@ -47,6 +46,13 @@ defmodule Traffic.Network.JunctionServer do
     GenServer.call(server, :get_location)
   end
 
+  def get_distance(junction1, junction2) do
+    Traffic.Geometry.distance(
+      get_location(junction1),
+      get_location(junction2)
+    )
+  end
+
   def add_linked_road(server, {side, road}) do
     GenServer.cast(server, {:add_linked_road, {side, road}})
   end
@@ -54,6 +60,8 @@ defmodule Traffic.Network.JunctionServer do
   def receive_vehicle(server, vehicle) do
     GenServer.cast(server, {:receive_vehicle, vehicle})
   end
+
+  # Server (callbacks)
 
   @impl true
   def handle_call(:get_location, _from, %State{} = state) do
@@ -104,7 +112,7 @@ defmodule Traffic.Network.JunctionServer do
     state.vehicles
     |> Enum.each(fn data ->
       {target, side, lane_no} = data.future_road
-      RoadServer.receive_vehicle(target, side, lane_no, data.vehicle)
+      RoadServer.receive_vehicle(target, invert(side), lane_no, data.vehicle)
     end)
 
     {
@@ -116,6 +124,9 @@ defmodule Traffic.Network.JunctionServer do
       }
     }
   end
+
+  def invert(:right), do: :left
+  def invert(:left), do: :right
 
   defp add_timing(timings, {side, road}) do
     timings

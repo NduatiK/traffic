@@ -9,5 +9,5 @@ defmodule Traffic.Network.Timing.Strategy do
   Gives current state given the current and prev state, last change time, current_time and some opts.
   """
   @callback tick({light(), light()}, integer(), integer(), Keyword.t()) ::
-              light()
+              {{light(), light()}, integer()}
 end

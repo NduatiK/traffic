@@ -7,7 +7,7 @@ defmodule TrafficWeb.Components.Lofi.Vehicle do
   prop(y, :integer, default: 0)
   prop(breadth, :integer, default: 30)
   prop(length, :integer, default: 30)
-  prop(vehicle, :map)
+  prop(vehicle, :any)
 
   def render(assigns) do
     ~F"""
@@ -17,9 +17,9 @@ defmodule TrafficWeb.Components.Lofi.Vehicle do
         y={round(@y)}
         width={3}
         height={3}
-        stroke={render_speed(@vehicle)}
+        stroke={"blue"}
         stroke-width={2}
-        fill={render_speed(@vehicle)}
+        fill={"blue"}
       />
     </svg>
     """
@@ -38,11 +38,11 @@ defmodule TrafficWeb.Components.Lofi.Vehicle do
   #   """
   # end
 
-  def render_speed(vehicle) do
-    cond do
-      vehicle.speed > 2 -> "gray"
-      vehicle.speed > 1 -> "orange"
-      true -> "blue"
-    end
-  end
+  # def render_speed(vehicle) do
+  #   cond do
+  #     vehicle.speed > 2 -> "gray"
+  #     vehicle.speed > 1 -> "orange"
+  #     true -> "blue"
+  #   end
+  # end
 end

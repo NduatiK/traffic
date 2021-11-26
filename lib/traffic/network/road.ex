@@ -30,6 +30,17 @@ defmodule Traffic.Network.Road do
     Application.put_env(:traffic, :scale_speed, speed)
   end
 
+  def new(name, length) do
+    %Road{
+      name: name,
+      length: length,
+      right: [
+        []
+      ],
+      left: [[]]
+    }
+  end
+
   def preloaded(name \\ :unique_road) do
     %Road{
       name: name,
@@ -145,11 +156,11 @@ defmodule Traffic.Network.Road do
   end
 
   @spec vehicle_join_road(Road.t(), Road.road_end(), [[{Vehicle.t(), float()}]]) :: Road.t()
-  def vehicle_join_road(road = %{left: lanes}, :right, vehicles) do
+  def vehicle_join_road(road = %{left: lanes}, :left, vehicles) do
     %{road | left: vehicle_join_lanes(lanes, vehicles)}
   end
 
-  def vehicle_join_road(road = %{right: lanes}, :left, vehicles) do
+  def vehicle_join_road(road = %{right: lanes}, :right, vehicles) do
     %{road | right: vehicle_join_lanes(lanes, vehicles)}
   end
 
@@ -272,26 +283,78 @@ defmodule Traffic.Network.Road do
       {[], next_location, future_road}
     end
   end
+
+  def vehicles_ahead_of(road, position, lane_name, distance) do
+    [lane] =
+      road
+      |> Map.get(lane_name)
+
+    lane
+    |> Enum.reduce([], fn {%{speed: speed, vehicle: pid}, vehicle_position}, vehicles ->
+      if vehicle_position >= position && vehicle_position <= position + distance do
+        [{speed, vehicle_position, pid} | vehicles]
+      else
+        vehicles
+      end
+    end)
+    |> Enum.reverse()
+  end
+
+  def update_position_and_speed(road, vehicle, lane_name, new_position, new_speed) do
+    updated_lane =
+      road
+      # |> IO.inspect()
+      |> Map.get(lane_name)
+      |> Enum.flat_map(& &1)
+      |> Enum.map(fn {%{speed: _, vehicle: pid}, _} = vehicle_data ->
+        if pid == vehicle do
+          {%{speed: new_speed, vehicle: pid}, new_position}
+        else
+          vehicle_data
+        end
+      end)
+
+    road
+    |> Map.put(lane_name, [updated_lane])
+  end
+
+  def remove_vehicle(road, vehicle, lane_name) do
+    updated_lane =
+      road
+      |> Map.get(lane_name)
+      |> Enum.flat_map(& &1)
+      |> Enum.flat_map(fn {%{speed: _, vehicle: pid}, _} = vehicle_data ->
+        if pid == vehicle do
+          []
+        else
+          [vehicle_data]
+        end
+      end)
+
+    road
+    |> Map.put(lane_name, [updated_lane])
+  end
 end
 
 defimpl Inspect, for: Traffic.Network.Road do
-  @scale Traffic.Network.Road.scale()
+  @scale 1 / 10
   @vehicle_width Traffic.Network.Road.vehicle_length()
 
+  @spec inspect(Traffic.Network.Road.t(), any) :: <<_::64, _::_*8>>
   def inspect(road, _opts) do
     "\nName: #{road.name}\n" <>
-      String.duplicate("<", road.length * @scale) <>
+      String.duplicate("<", round(road.length * @scale)) <>
       inspect_lanes(road.left, :down, road.length) <>
-      String.duplicate("=", road.length * @scale) <>
+      String.duplicate("=", round(road.length * @scale)) <>
       inspect_lanes(road.right, :up, road.length) <>
-      String.duplicate(">", road.length * @scale)
+      String.duplicate(">", round(road.length * @scale))
   end
 
   @spec inspect_lanes(list(list({Vehicle.t(), float()})), :down | :up, non_neg_integer) ::
           nonempty_binary
   def inspect_lanes(lanes, direction, length) do
     Enum.map(lanes, &inspect_vehicles(direction, &1, length))
-    |> Enum.intersperse("\n" <> String.duplicate("·", length * @scale))
+    |> Enum.intersperse("\n" <> String.duplicate("·", round(length * @scale)))
     |> Enum.join()
     |> Kernel.<>("\n")
   end
@@ -302,23 +365,25 @@ defimpl Inspect, for: Traffic.Network.Road do
     do_inspect_vehicles(direction, vehicles)
     |> String.trim_leading("\n")
     |> String.reverse()
-    |> String.pad_leading(length * @scale)
+    |> String.pad_leading(round(length * @scale))
     |> then(&("\n" <> &1))
   end
 
   def inspect_vehicles(:up = direction, vehicles, length) do
     do_inspect_vehicles(direction, vehicles)
-    |> String.pad_trailing(length * @scale + 1)
+    |> String.pad_trailing(round(length * @scale) + 1)
   end
 
   @spec do_inspect_vehicles(:down | :up, list({Vehicle.t(), float()})) ::
           nonempty_binary
-  def do_inspect_vehicles(direction, vehicles) do
+  def do_inspect_vehicles(_direction, vehicles) do
     vehicles
-    |> Enum.reduce({"\n", -@vehicle_width}, fn {vehicle, location}, {acc_str, prev_position} ->
-      marker = vehicle.marker
-      # marker = "◈"
+    |> Enum.reduce({"\n", -@vehicle_width}, fn {_vehicle, location}, {acc_str, prev_position} ->
+      # marker = vehicle.marker
+      marker = "◈"
       # marker = vehicle_art(direction)
+
+      IO.inspect(location)
 
       {
         acc_str <>
@@ -326,7 +391,7 @@ defimpl Inspect, for: Traffic.Network.Road do
             " ",
             round(max(0, (location - prev_position - @vehicle_width) * @scale))
           ) <>
-          String.duplicate(marker, round(@vehicle_width * @scale)),
+          marker,
         # marker,
         location
       }

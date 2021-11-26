@@ -15,7 +15,7 @@ defmodule TrafficWeb.Components.Lofi.Vehicle do
       <rect
         x={round(@x)}
         y={round(@y)}
-        width={3}
+        width={1}
         height={3}
         stroke={"blue"}
         stroke-width={2}

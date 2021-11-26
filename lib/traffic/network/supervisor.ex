@@ -16,6 +16,8 @@ defmodule Traffic.Network.NetworkSupervisor do
       {ChildSupervisor, init_arg}
     ]
 
+    Traffic.Statistics.start_up(Keyword.get(init_arg, :name))
+
     Supervisor.init(children, strategy: :rest_for_one)
   end
 

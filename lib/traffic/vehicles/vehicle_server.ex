@@ -37,6 +37,10 @@ defmodule Traffic.Vehicles.VehicleServer do
     field(:current_speed, integer(), default: 0)
     field(:current_acceleration, integer(), default: 0)
     field(:driver_profile, DriverProfile.t())
+    field(:waiting_time, integer(), default: 0)
+
+    field(:id, integer(), enforce: true)
+    field(:name, String.t(), enforce: true)
 
     field(:paused, boolean(), default: false)
   end
@@ -51,13 +55,14 @@ defmodule Traffic.Vehicles.VehicleServer do
   # Server (callbacks)
   @impl true
   def init(opts) do
-    Process.send_after(self(), :look_ahead, @look_ahead_after + 100)
     Process.send_after(self(), :tick, @tick_after)
 
     config = Keyword.get(opts, :config)
 
     %State{
-      driver_profile: DriverProfile.random(config)
+      driver_profile: DriverProfile.random(config),
+      name: Keyword.get(opts, :name),
+      id: Keyword.get(opts, :id)
     }
     |> then(&{:ok, &1})
   end
@@ -111,6 +116,8 @@ defmodule Traffic.Vehicles.VehicleServer do
 
   @impl true
   def handle_cast({:send_road_details, opts}, %State{} = state) do
+    Process.send_after(self(), :look_ahead, @look_ahead_after)
+
     road = Keyword.get(opts, :road)
     position = Keyword.get(opts, :position)
     lane = Keyword.get(opts, :lane)
@@ -148,23 +155,20 @@ defmodule Traffic.Vehicles.VehicleServer do
   @impl true
   def handle_info(:tick, %State{position: nil} = state) do
     Process.send_after(self(), :tick, 1000)
-    IO.inspect("-")
     {:noreply, state}
   end
 
   def handle_info(:tick, %State{} = state) do
     Process.send_after(self(), :tick, @tick_after)
 
-    # position_ = state.position.position + state.current_speed / 200
-    position_ = state.position.position + state.current_speed / 20
+    position_ = state.position.position + state.current_speed / 6
 
     position_ = min(state.position.length, position_)
 
     current_speed =
       state.current_speed
       |> apply_jitter(state.driver_profile)
-
-    # |> adjust_to_environment(state.visual_knowledge)
+      |> adjust_to_environment(state.driver_profile, state.visual_knowledge)
 
     position = %{
       state.position
@@ -177,7 +181,10 @@ defmodule Traffic.Vehicles.VehicleServer do
         position: position
     }
 
-    {:noreply, update_parent(new_state)}
+    new_state
+    |> update_parent()
+    |> track_waiting()
+    |> then(&{:noreply, &1})
   end
 
   defp to_vision(items_ahead) do
@@ -204,19 +211,21 @@ defmodule Traffic.Vehicles.VehicleServer do
     current_speed + delta
   end
 
-  def adjust_to_environment(current_speed, nil) do
+  def adjust_to_environment(current_speed, _, nil) do
     current_speed
   end
 
   def adjust_to_environment(
         current_speed,
+        driver_profile,
         %Vision{junction_light: junction_light, appx_distance_to_lead: appx_distance_to_lead} =
           visual_knowledge
       ) do
     case {appx_distance_to_lead, junction_light} do
       {nil, nil} ->
         # No cars or junction ahead to worry about
-        current_speed
+        current_speed * 0.95 +
+          (0.05 + driver_profile.initial_acceleration / 50) * driver_profile.mean_speed
 
       {nil, :green} ->
         # No cars ahead only worry about junction
@@ -228,15 +237,31 @@ defmodule Traffic.Vehicles.VehicleServer do
 
       {nil, _yellow_or_red} ->
         # No cars ahead only worry about junction
-        current_speed * 0.5
+        cond do
+          visual_knowledge.junction_distance < 1 ->
+            0
+
+          visual_knowledge.junction_distance < 3 ->
+            current_speed * 0.5
+
+          true ->
+            current_speed * 0.7
+        end
 
       {lead, _} ->
+        # Follow the cars
         catching_up = visual_knowledge.appx_speed_of_lead < current_speed
-        # No junction ahead only worry about cars
+        leader_speed = visual_knowledge.appx_speed_of_lead
+
         cond do
-          lead < 10 and catching_up ->
-            visual_knowledge.appx_speed_of_lead * (10 - lead) / 10 +
-              current_speed * lead / 10
+          lead < 10 and leader_speed < 1 ->
+            0
+
+          (lead < 10 and leader_speed < 10) or (lead < 10 and catching_up) ->
+            proportion_leader = :math.pow((10 - lead) / 10, 0.25)
+
+            lead * proportion_leader +
+              current_speed * (1 - proportion_leader)
 
           catching_up ->
             (visual_knowledge.appx_speed_of_lead + current_speed) / 2
@@ -248,7 +273,6 @@ defmodule Traffic.Vehicles.VehicleServer do
   end
 
   defp update_parent(%State{visual_knowledge: nil} = state) do
-    IO.inspect("update_parent no knowledge")
     state
   end
 
@@ -275,5 +299,18 @@ defmodule Traffic.Vehicles.VehicleServer do
           state
         end
     end
+  end
+
+  def track_waiting(%State{current_speed: 0} = state) do
+    %{state | waiting_time: state.waiting_time + 1}
+  end
+
+  def track_waiting(%State{current_speed: _, waiting_time: 0} = state) do
+    state
+  end
+
+  def track_waiting(%State{current_speed: _, waiting_time: waiting_time} = state) do
+    Traffic.Statistics.update_wait_time(state.name, state.id, waiting_time)
+    %{state | waiting_time: 0}
   end
 end

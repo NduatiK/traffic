@@ -16,7 +16,6 @@ defmodule Traffic.Network.RoadServer do
     field(:id, integer())
     field(:road, Road.t())
     field(:junction_and_colors, %{atom() => Junction.t()})
-    field(:paused, boolean(), default: false)
   end
 
   # Client
@@ -92,7 +91,7 @@ defmodule Traffic.Network.RoadServer do
   end
 
   def pause(server) do
-    GenServer.cast(server, :pause)
+    # GenServer.cast(server, :pause)
   end
 
   @impl true
@@ -124,6 +123,11 @@ defmodule Traffic.Network.RoadServer do
       |> maybe_add_vehicle_info(state, position, lane, distance)
 
     {:reply, visual_info, state}
+  end
+
+  @impl true
+  def handle_cast(:pause, %State{} = state) do
+    {:noreply, state}
   end
 
   @impl true
@@ -166,9 +170,7 @@ defmodule Traffic.Network.RoadServer do
 
     {target, side} = Enum.random(state.junction_and_colors[lane].linked_roads)
 
-    vehicle_data =
-      %{future_road: {target, side, 0}, vehicle: vehicle}
-      |> IO.inspect()
+    vehicle_data = %{future_road: {target, side, 0}, vehicle: vehicle}
 
     JunctionServer.receive_vehicle(state.junction_and_colors[lane].junction, vehicle_data)
 
@@ -271,17 +273,15 @@ defmodule Traffic.Network.RoadServer do
   defp preload(name, id) do
     me = self()
 
-    if id == 0 do
-      Task.async(fn ->
-        :timer.sleep(1000)
-        {:ok, pid} = Manager.start_vehicle(name)
-        # {:ok, pid1} = Manager.start_vehicle(name)
-        # {:ok, pid2}=Manager.start_vehicle(name)
-        # {:ok, pid3}=Manager.start_vehicle(name)
+    Task.async(fn ->
+      :timer.sleep(1000)
+      {:ok, pid} = Manager.start_vehicle(name)
+      {:ok, pid1} = Manager.start_vehicle(name)
+      # {:ok, pid2}=Manager.start_vehicle(name)
+      # {:ok, pid3}=Manager.start_vehicle(name)
 
-        __MODULE__.receive_vehicle(me, :left, 0, pid)
-        # __MODULE__.receive_vehicle(me, :right, 0, pid1)
-      end)
-    end
+      __MODULE__.receive_vehicle(me, :left, 0, pid)
+      __MODULE__.receive_vehicle(me, :right, 0, pid1)
+    end)
   end
 end

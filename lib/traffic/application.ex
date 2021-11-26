@@ -33,15 +33,10 @@ defmodule Traffic.Application do
           url: &TrafficWeb.Endpoint.url/0
         ]
       }
-
-      # Start a worker by calling: Traffic.Worker.start_link(arg)
-      # {Traffic.Worker, arg}
     ]
 
     setup()
 
-    # See https://hexdocs.pm/elixir/Supervisor.html
-    # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Traffic.Supervisor]
     Supervisor.start_link(children, opts)
   end

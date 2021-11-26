@@ -88,6 +88,7 @@ defmodule Traffic.Network.Manager do
     Traffic.Network.NetworkSupervisor.stop(name)
     Traffic.Network.start_simulation(name)
     Traffic.Network.build_network(name)
+    Traffic.Statistics.reset(name)
   end
 
   def get_pause_status(manager) do

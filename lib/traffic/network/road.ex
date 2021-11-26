@@ -291,7 +291,7 @@ defmodule Traffic.Network.Road do
 
     lane
     |> Enum.reduce([], fn {%{speed: speed, vehicle: pid}, vehicle_position}, vehicles ->
-      if vehicle_position >= position && vehicle_position <= position + distance do
+      if vehicle_position > position && vehicle_position <= position + distance do
         [{speed, vehicle_position, pid} | vehicles]
       else
         vehicles

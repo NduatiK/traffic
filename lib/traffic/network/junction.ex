@@ -75,7 +75,7 @@ defmodule Traffic.Network.Junction do
       roads
       |> Enum.reverse()
       |> Enum.reduce(timings, fn road, timings ->
-        update_lights(road, timings, config.junction_strategy)
+        update_lights(road, timings, config.timing_strategy)
       end)
 
     {
@@ -102,13 +102,13 @@ defmodule Traffic.Network.Junction do
     |> Enum.into(%{})
   end
 
-  def update_lights(road, timings, junction_strategy) do
+  def update_lights(road, timings, timing_strategy) do
     {road_name, %{connection: connection}} = road
 
     timing = timings[{road_name, connection}]
 
     {new_state, last_change} =
-      junction_strategy.tick(timing.state, timing.last_change, timing.now, [])
+      timing_strategy.tick(timing.state, timing.last_change, timing.now, [])
 
     timings =
       Map.put(timings, {road_name, connection}, %{

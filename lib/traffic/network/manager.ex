@@ -66,10 +66,16 @@ defmodule Traffic.Network.Manager do
     |> GenServer.call(:get_graph)
   end
 
-  def get_driver_config(manager) do
+  def get_config(manager) do
     manager
     |> get_manager()
-    |> GenServer.call(:get_driver_config)
+    |> GenServer.call(:get_config)
+  end
+
+  def get_driver_config(manager) do
+    manager
+    |> get_config()
+    |> then(& &1.driver_profile_stats)
   end
 
   def set_driver_config(manager, config) do
@@ -85,10 +91,11 @@ defmodule Traffic.Network.Manager do
   end
 
   def reset_network(name) when is_atom(name) do
+    config = get_config(name)
     Traffic.Network.NetworkSupervisor.stop(name)
-    Traffic.Network.start_simulation(name)
-    Traffic.Network.build_network(name)
-    Traffic.Statistics.reset(name)
+    # Traffic.Statistics.reset(name)
+    Traffic.Network.start_simulation_and_network(name)
+    # Traffic.Network.start_simulation(name, config: config)
   end
 
   def get_pause_status(manager) do
@@ -142,7 +149,6 @@ defmodule Traffic.Network.Manager do
       end
     end)
 
-    IO.inspect("----")
     {:reply, {:ok, pid}, %{state | graph: new_graph}}
   end
 
@@ -179,8 +185,8 @@ defmodule Traffic.Network.Manager do
   end
 
   @impl true
-  def handle_call(:get_driver_config, _from, %State{} = state) do
-    {:reply, state.config.driver_profile_stats, state}
+  def handle_call(:get_config, _from, %State{} = state) do
+    {:reply, state.config, state}
   end
 
   @impl true

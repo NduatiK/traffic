@@ -3,13 +3,12 @@ defmodule Traffic.Network.JunctionServer do
   use TypedStruct
   alias Traffic.Network.RoadServer
   alias Traffic.Network.Junction
+  alias Traffic.Network.Timing.Strategy
 
   typedstruct module: Timing, enforce: true do
     field(:side, atom())
     field(:color, atom(), default: :red)
-    field(:state, {atom(), atom()}, default: {:red, :yellow})
-    field(:now, integer(), default: 0)
-    field(:last_change, integer(), default: 0)
+    field(:state, Strategy.state())
   end
 
   typedstruct module: State, enforce: true do
@@ -31,7 +30,7 @@ defmodule Traffic.Network.JunctionServer do
 
   @impl true
   def init(opts) do
-    Process.send_after(self(), :tick, 100 + :rand.uniform(5000))
+    Process.send_after(self(), :tick, 100)
 
     {:ok,
      %State{
@@ -84,7 +83,7 @@ defmodule Traffic.Network.JunctionServer do
   def handle_cast({:add_linked_road, {side, road_pid}}, %State{} = state) do
     new_timings =
       state.timings
-      |> add_timing({side, road_pid})
+      |> add_timing({side, road_pid}, state.config.timing_strategy)
 
     {:noreply, %{state | timings: new_timings}}
   end
@@ -98,7 +97,7 @@ defmodule Traffic.Network.JunctionServer do
     timings =
       state.timings
       |> Enum.reduce(state.timings, fn {road, timing}, timings ->
-        updated_timing = update_lights(timing, state.config.junction_strategy)
+        updated_timing = update_lights(timing, state.config.timing_strategy)
 
         if updated_timing.color != timing.color do
           RoadServer.set_light(road, {timing.side, updated_timing.color})
@@ -128,21 +127,18 @@ defmodule Traffic.Network.JunctionServer do
   def invert(:right), do: :left
   def invert(:left), do: :right
 
-  defp add_timing(timings, {side, road}) do
+  defp add_timing(timings, {side, road}, strategy) do
     timings
-    |> Map.put(road, %Timing{side: side})
+    |> Map.put(road, %Timing{side: side, state: strategy.init()})
   end
 
-  defp update_lights(%Timing{} = timing, junction_strategy) do
-    {new_state, last_change} =
-      junction_strategy.tick(timing.state, timing.last_change, timing.now, [])
+  defp update_lights(%Timing{} = timing, timing_strategy) do
+    {new_color, new_state} = timing_strategy.tick(timing.state)
 
     %{
       timing
-      | now: timing.now + 1,
-        state: new_state,
-        color: elem(new_state, 0),
-        last_change: last_change
+      | state: new_state,
+        color: new_color
     }
   end
 end

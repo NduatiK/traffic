@@ -23,15 +23,9 @@ defmodule TrafficWeb.Components.Lofi.Lane do
     <g style={if @flip, do: "transform-origin: #{@width / 2}px 0px; transform:scale(-1, 1)", else: ""}>
       {#for {vehicles, index} <- Enum.with_index(@lanes)}
         {#for {vehicle, position} <- vehicles}
-          <Vehicle
-            flip={@flip}
-            x={position / @road_length * @width}
-            y={3 + @offset + index * 2}
-            color="orange"
-          />
+          <Vehicle flip={@flip} x={position / @road_length * @width} y={3 + @offset + index * 2} color="orange" />
         {/for}
-      {/for}
-      <rect width={@width} height={10} fill="transparent" />
+      {/for} <rect width={@width} height={10} fill="transparent" />
     </g>
     """
   end

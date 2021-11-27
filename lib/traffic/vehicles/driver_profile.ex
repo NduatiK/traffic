@@ -155,7 +155,6 @@ defmodule Traffic.Vehicles.DriverProfile do
 
     random_number = :rand.uniform_real() * distribution_range
 
-    distribution =
       distribution
       |> find_profile_at(random_number)
       |> then(fn generator -> generator.() end)

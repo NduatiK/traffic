@@ -23,28 +23,31 @@ defmodule Traffic.MemoryDB do
   """
   def destroy_tables do
     tables = :ets.select(__MODULE__, [{{:_, :"$1"}, [], [:"$1"]}])
-    IO.inspect(tables)
 
     for table <- tables do
       :ets.delete_all_objects(table)
     end
   end
 
-  def destroy_table(table_name) do
+  @spec clear_table(atom | :ets.tid()) :: true
+  def clear_table(table_name) do
     :ets.delete_all_objects(table_name)
+  end
+
+  @spec drop_table(atom | :ets.tid()) :: true
+  def drop_table(table_name) do
+    :ets.delete(table_name)
   end
 
   @doc """
   Retrieve the value with the given key from the named table.
   """
 
-  def get(id, table) when is_binary(table) do
-    get(id, String.to_existing_atom(table))
+  def get(table, id) when is_binary(table) do
+    get(String.to_existing_atom(table), id)
   end
 
-  def get(id, table) do
-    # :ets.lookup(table, id)
-
+  def get(table, id) do
     case :ets.lookup(table, id) do
       [] -> {:error, "does not exist"}
       [{_key, record} | _] -> {:ok, record}
@@ -79,20 +82,39 @@ defmodule Traffic.MemoryDB do
   @doc """
   Insert a value into the named table.
   """
-  def insert(record, table, at \\ nil)
+  def insert(table, at \\ nil, record)
 
-  def insert(record, table, at) when is_binary(table) do
-    insert(record, String.to_existing_atom(table), at)
+  def insert(table, at, record) when is_binary(table) do
+    insert(String.to_existing_atom(table), at, record)
   end
 
-  def insert(record, table, at) do
+  def insert(table, at, record) do
     :ets.insert(table, {at, record})
+  end
+
+  @doc """
+  Update a value in the named table.
+  """
+  def update(table, at, default, update_fn)
+
+  def update(table, at, default, update_fn) when is_binary(table) do
+    update(String.to_existing_atom(table), at, default, update_fn)
+  end
+
+  def update(table, at, default, update_fn) do
+    case get(table, at) do
+      {:ok, value} ->
+        insert(table, at, update_fn.(value))
+
+      _ ->
+        insert(table, at, default)
+    end
   end
 
   @doc """
   Delete a value from a named table.
   """
-  def delete(id, table) do
+  def delete(table, id) do
     :ets.delete(table, id)
   end
 end

@@ -8,19 +8,38 @@ defmodule Traffic.Statistics do
   end
 
   def reset(simulation_name) do
-    MemoryDB.destroy_table(table_name(simulation_name))
+    try do
+      MemoryDB.drop_table(table_name(simulation_name))
+    rescue
+      _ ->
+        nil
+    end
+
     start_up(simulation_name)
   end
 
   def update_wait_time(simulation_name, vehicle_name, wait_time) do
-    MemoryDB.insert(wait_time, table_name(simulation_name), vehicle_name)
+    MemoryDB.update(table_name(simulation_name), vehicle_name, {wait_time, 0}, fn
+      {old_wait_time, count} ->
+        {old_wait_time + wait_time, count + 1}
+    end)
   end
 
   def get_average_wait_time(simulation_name) do
-    wait_times = MemoryDB.get_all_values(table_name(simulation_name))
+    simulation_name
+    |> table_name()
+    |> MemoryDB.get_all_values()
+    |> Enum.reduce({0, 0}, fn {sum, count}, {acc_sum, acc_count} ->
+      {sum + acc_sum, count + acc_count}
+    end)
+    |> average()
+  end
 
-    sum = Enum.sum(wait_times)
+  def average({_sum, 0}) do
+    0
+  end
 
-    sum / Enum.count(wait_times)
+  def average({sum, count}) do
+    sum / count
   end
 end

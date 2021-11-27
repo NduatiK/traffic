@@ -1,22 +1,29 @@
 defmodule TrafficWeb.Pages.LofiMap do
   use TrafficWeb, :surface_view_helpers
-  alias TrafficWeb.Components.Lofi.{Road, RoadNetwork, Junction}
-  alias TrafficWeb.Components.Canvas
   alias Traffic.Network.Manager
-  alias TrafficWeb.Components.{DriverDistributionModal, PositionedButton, Logo}
+  alias Traffic.Statistics
+  alias TrafficWeb.Components.Canvas
+  alias TrafficWeb.Components.DriverDistributionModal
+  alias TrafficWeb.Components.Lofi.{Road, RoadNetwork, Junction}
+  alias TrafficWeb.Components.Logo
+  alias TrafficWeb.Components.PositionedButton
+  alias TrafficWeb.Components.PositionedDiv
 
-  data width, :integer, default: 2000
-  data height, :integer, default: 1010
-  data padding, :integer, default: 50
-  data graph, :map
-  data paused, :boolean, default: false
-  data network_id, :atom
+  data(width, :integer, default: 2000)
+  data(height, :integer, default: 1010)
+  data(padding, :integer, default: 50)
+  data(graph, :map)
+  data(paused, :boolean, default: false)
+  data(network_id, :atom)
+  data(average_speed, :integer, default: 0)
 
-  data show_driver_distributions, :boolean, default: true
-  data driver_distributions, :list, default: []
+  data(show_driver_distributions, :boolean, default: true)
+  data(driver_distributions, :list, default: [])
 
   @impl true
   def mount(params, _session, socket) do
+    Process.send_after(self(), :update_average, 2000)
+
     case validate_network_id(socket, params) do
       :error ->
         socket
@@ -70,6 +77,18 @@ defmodule TrafficWeb.Pages.LofiMap do
   end
 
   @impl true
+  def handle_info(:update_average, socket) do
+    Process.send_after(self(), :update_average, 1000)
+    network_id = socket.assigns.network_id
+
+    average_speed = Statistics.get_average_wait_time(network_id)
+
+    socket
+    |> assign(:average_speed, round(average_speed, 2))
+    |> then(&{:noreply, &1})
+  end
+
+  @impl true
   def render(assigns) do
     ~F"""
     <Canvas id="canvas" width={@width} height={@height} padding={@padding}>
@@ -95,7 +114,11 @@ defmodule TrafficWeb.Pages.LofiMap do
           right={6}
           :if={@show_driver_distributions}
           driver_distributions={@driver_distributions}
-        />
+        /> <PositionedDiv top={6} right={32}>
+          <span>
+            {@average_speed}
+          </span>
+        </PositionedDiv>
       </:overlays>
       <RoadNetwork id="network" network_id={@network_id} network={@graph} />
     </Canvas>
@@ -113,13 +136,11 @@ defmodule TrafficWeb.Pages.LofiMap do
 
   @impl true
   def handle_event("pause_network", _, socket) do
-    Manager.pause(socket.assigns.network_id)
+    network_id = socket.assigns.network_id
+    Manager.pause(network_id)
 
     socket
-    |> assign(
-      :paused,
-      Manager.get_pause_status(socket.assigns.network_id)
-    )
+    |> assign(:paused, Manager.get_pause_status(network_id))
     |> then(&{:noreply, &1})
   end
 
@@ -153,5 +174,9 @@ defmodule TrafficWeb.Pages.LofiMap do
       _ ->
         :error
     end
+  end
+
+  def round(num, dp) do
+    round(num * :math.pow(10, dp)) / :math.pow(10, dp)
   end
 end

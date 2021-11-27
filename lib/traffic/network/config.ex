@@ -7,6 +7,6 @@ defmodule Traffic.Network.Config do
   # Enforce keys by default.
   typedstruct enforce: true do
     field :driver_profile_stats, map(), default: DriverProfile.default_stats()
-    field :junction_strategy, Strategy
+    field :timing_strategy, Strategy
   end
 end

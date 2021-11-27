@@ -383,8 +383,6 @@ defimpl Inspect, for: Traffic.Network.Road do
       marker = "◈"
       # marker = vehicle_art(direction)
 
-      IO.inspect(location)
-
       {
         acc_str <>
           String.duplicate(

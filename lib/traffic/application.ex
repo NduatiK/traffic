@@ -50,7 +50,7 @@ defmodule Traffic.Application do
 
       Traffic.Simulation.start_simulation(:default,
         config: %Traffic.Network.Config{
-          junction_strategy: Traffic.Network.Timing.NaiveStrategy
+          timing_strategy: Traffic.Network.Timing.RandomizedNaiveStrategy
         }
       )
 

@@ -86,10 +86,11 @@ defmodule TrafficWeb.Components.Lofi.Road do
         id={Atom.to_string(@road.name) <> "left"}
         offset={8}
       />
-      <g class="z-10"><rect width={5} height={4} fill={render_light(@lights.left)} /></g>
-      <g class="z-10"><rect width={5} height={4} x={@length - 5} fill={render_light(@lights.right)} /></g>
+      <g class="z-10"><rect width={5} height={4} x={7} fill={render_light(@lights.left)} /></g>
+      <g class="z-10"><rect width={5} height={4} x={@length - 10} fill={render_light(@lights.right)} /></g>
     </g>
     """
+
     # <text x="0" y="0" class="text-sm">L</text>
     # <text x="0" y="0" class="text-sm">L{Atom.to_string(@road.name) }{inspect(@road_pid)}</text>
     # s

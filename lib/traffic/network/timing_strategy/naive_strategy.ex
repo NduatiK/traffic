@@ -3,15 +3,15 @@ defmodule Traffic.Network.Timing.NaiveStrategy do
   Just wait a bit and keep switching
   """
   alias Traffic.Network.Timing.Strategy
-  @behaviour Strategy
+  use Strategy
   use TypedStruct
 
   typedstruct module: State do
-    field :lights, {Strategy.light(), Strategy.light()}
-    field :now, integer()
-    field :last_change, integer()
-    field :time_in_yellow, integer()
-    field :time_per_state, integer()
+    field(:lights, {Strategy.light(), Strategy.light()})
+    field(:now, integer())
+    field(:last_change, integer())
+    field(:time_in_yellow, integer())
+    field(:time_per_state, integer())
   end
 
   @impl Strategy
@@ -20,19 +20,35 @@ defmodule Traffic.Network.Timing.NaiveStrategy do
   end
 
   @impl Strategy
-  @spec init() :: State.t()
   def init() do
-    %State{
-      now: 0,
-      lights: {:red, :yellow},
-      last_change: 0,
-      time_in_yellow: 25,
-      time_per_state: 100
-    }
+    %{}
   end
 
   @impl Strategy
-  def tick(%State{} = state) do
+  def add_road(state, road) do
+    state
+    |> Map.put(
+      road,
+      %State{
+        now: 0,
+        lights: {:red, :yellow},
+        last_change: 0,
+        time_in_yellow: 25,
+        time_per_state: 100
+      }
+    )
+  end
+
+  @impl Strategy
+  def tick(state) do
+    state
+    |> Enum.map(fn {k, v} ->
+      {k, tick_state(v)}
+    end)
+    |> Enum.into(%{})
+  end
+
+  defp tick_state(%State{} = state) do
     state = %{state | now: state.now + 1}
 
     time_per_state =
@@ -53,14 +69,6 @@ defmodule Traffic.Network.Timing.NaiveStrategy do
         state
       end
 
-    {
-      elem(state.lights, 0),
-      state
-    }
+    state
   end
-
-  defp transition({:yellow, :red}), do: {:green, :yellow}
-  defp transition({:yellow, :green}), do: {:red, :yellow}
-  defp transition({:red, :yellow}), do: {:yellow, :red}
-  defp transition({:green, :yellow}), do: {:yellow, :green}
 end

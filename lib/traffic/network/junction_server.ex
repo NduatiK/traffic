@@ -5,12 +5,6 @@ defmodule Traffic.Network.JunctionServer do
   alias Traffic.Network.Junction
   alias Traffic.Network.Timing.Strategy
 
-  typedstruct module: Timing, enforce: true do
-    field(:side, atom())
-    field(:color, atom(), default: :red)
-    field(:state, Strategy.state())
-  end
-
   typedstruct module: State, enforce: true do
     field(:id, :any)
     field(:config, Traffic.Network.Config.t())
@@ -18,7 +12,7 @@ defmodule Traffic.Network.JunctionServer do
     field(:y, integer())
     field(:vehicles, list(), default: [])
     field(:paused, boolean(), default: false)
-    field :timings, %{pid() => Timing.t()}, default: %{}
+    field :timings, %{{pid(), atom()} => Timing.t()}, default: %{}
   end
 
   # Client
@@ -83,7 +77,7 @@ defmodule Traffic.Network.JunctionServer do
   def handle_cast({:add_linked_road, {side, road_pid}}, %State{} = state) do
     new_timings =
       state.timings
-      |> add_timing({side, road_pid}, state.config.timing_strategy)
+      |> add_timing({road_pid, side}, state.config.timing_strategy)
 
     {:noreply, %{state | timings: new_timings}}
   end
@@ -96,15 +90,16 @@ defmodule Traffic.Network.JunctionServer do
 
     timings =
       state.timings
-      |> Enum.reduce(state.timings, fn {road, timing}, timings ->
-        updated_timing = update_lights(timing, state.config.timing_strategy)
-
-        if updated_timing.color != timing.color do
-          RoadServer.set_light(road, {timing.side, updated_timing.color})
-        end
-
+      |> state.config.timing_strategy.tick()
+      |> tap(fn timings ->
         timings
-        |> Map.put(road, updated_timing)
+        |> Enum.each(fn {k, _} ->
+          {road, side} = k
+
+          if Strategy.get_color(state.timings, k) != Strategy.get_color(timings, k) do
+            RoadServer.set_light(road, {side, Strategy.get_color(timings, k)})
+          end
+        end)
       end)
 
     # Push vehicles out, assume 0 time
@@ -127,18 +122,8 @@ defmodule Traffic.Network.JunctionServer do
   def invert(:right), do: :left
   def invert(:left), do: :right
 
-  defp add_timing(timings, {side, road}, strategy) do
+  defp add_timing(timings, {road, side}, strategy) do
     timings
-    |> Map.put(road, %Timing{side: side, state: strategy.init()})
-  end
-
-  defp update_lights(%Timing{} = timing, timing_strategy) do
-    {new_color, new_state} = timing_strategy.tick(timing.state)
-
-    %{
-      timing
-      | state: new_state,
-        color: new_color
-    }
+    |> strategy.add_road({road, side})
   end
 end

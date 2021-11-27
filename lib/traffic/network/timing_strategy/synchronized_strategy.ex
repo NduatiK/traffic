@@ -1,4 +1,4 @@
-defmodule Traffic.Network.Timing.RandomizedNaiveStrategy do
+defmodule Traffic.Network.Timing.SynchonizedStrategy do
   @moduledoc """
   Just wait a bit and keep switching
   """
@@ -7,12 +7,12 @@ defmodule Traffic.Network.Timing.RandomizedNaiveStrategy do
   use TypedStruct
 
   typedstruct module: State do
-    field(:lights, {Strategy.light(), Strategy.light()})
-    field(:now, integer())
-    field(:start_after, integer())
-    field(:last_change, integer())
-    field(:time_in_yellow, integer())
-    field(:time_per_state, integer())
+    field :lights, {Strategy.light(), Strategy.light()}
+    field :now, integer()
+    field :last_change, integer()
+    field :time_in_yellow, integer()
+    field :time_in_green, integer()
+    field :time_in_red, integer()
   end
 
   @impl Strategy
@@ -35,10 +35,20 @@ defmodule Traffic.Network.Timing.RandomizedNaiveStrategy do
         lights: {:red, :yellow},
         last_change: 0,
         time_in_yellow: 25,
-        time_per_state: 100,
-        start_after: :rand.uniform(100)
+        time_in_green: 100,
+        time_in_red: 100
       }
     )
+    |> Enum.with_index()
+    |> Enum.map(fn {{k, v}, i} ->
+      {k,
+       %{
+         v
+         | time_in_red: Enum.count(state) * 100,
+           last_change: i * 100
+       }}
+    end)
+    |> Enum.into(%{})
   end
 
   @impl Strategy
@@ -50,23 +60,19 @@ defmodule Traffic.Network.Timing.RandomizedNaiveStrategy do
     |> Enum.into(%{})
   end
 
-  def tick_state(%State{start_after: start_after, now: now} = state) when start_after > now do
-    state
-    |> Map.put(:now, state.now + 1)
-    # Also bump last change so that everything is offset
-    |> Map.put(:last_change, state.now + 1)
-  end
-
-  def tick_state(%State{} = state) do
+  defp tick_state(%State{} = state) do
     state = %{state | now: state.now + 1}
 
     time_per_state =
       case state.lights do
+        {:red, _} ->
+          state.time_in_red
+
         {:yellow, _} ->
           state.time_in_yellow
 
-        _ ->
-          state.time_per_state
+        {:green, _} ->
+          state.time_in_green
       end
 
     if state.now - state.last_change > time_per_state do

@@ -83,5 +83,4 @@ defmodule Traffic.Vehicles.Vehicle do
 
   def look_ahead() do
   end
-  
 end

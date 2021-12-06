@@ -19,20 +19,22 @@ defmodule Traffic.Application do
       TrafficWeb.Endpoint,
       # Start a network server
       {Traffic.Simulation, []},
-      {Registry, keys: :unique, name: Registry.Traffic},
-      {
-        Desktop.Window,
-        [
-          app: @app,
-          id: TrafficWindow,
-          title: "Traffique",
-          size: {600, 500},
-          icon: "icon32x32.png",
-          # menubar: TodoApp.MenuBar,
-          # icon_menu: TodoApp.Menu,
-          url: &TrafficWeb.Endpoint.url/0
-        ]
-      }
+      {Traffic.SimulationList, []},
+      {Registry, keys: :unique, name: Registry.Traffic}
+      # ,
+      # {
+      #   Desktop.Window,
+      #   [
+      #     app: @app,
+      #     id: TrafficWindow,
+      #     title: "Traffique",
+      #     size: {600, 500},
+      #     icon: "icon32x32.png",
+      #     # menubar: TodoApp.MenuBar,
+      #     # icon_menu: TodoApp.Menu,
+      #     url: &TrafficWeb.Endpoint.url/0
+      #   ]
+      # }
     ]
 
     setup()
@@ -42,19 +44,18 @@ defmodule Traffic.Application do
   end
 
   def setup() do
-    Desktop.identify_default_locale(TrafficWeb.Gettext)
+    # Desktop.identify_default_locale(TrafficWeb.Gettext)
 
     Task.async(fn ->
-      :observer.start()
+      # :observer.start()
       :timer.sleep(1000)
 
-      Traffic.Simulation.start_simulation(:default,
-        config: %Traffic.Network.Config{
-          # timing_strategy: Traffic.Network.Timing.NaiveStrategy
-          # timing_strategy: Traffic.Network.Timing.RandomizedNaiveStrategy
-          # timing_strategy: Traffic.Network.Timing.SynchonizedStrategy
-          timing_strategy: Traffic.Network.Timing.RandomizedSynchonizedStrategy
-        }
+      Traffic.Simulation.start_simulation(
+        :default,
+        # timing_strategy: Traffic.Network.Timing.NaiveStrategy
+        # timing_strategy: Traffic.Network.Timing.RandomizedNaiveStrategy
+        # timing_strategy: Traffic.Network.Timing.SynchonizedStrategy
+        Traffic.Network.Timing.RandomizedSynchonizedStrategy
       )
 
       :timer.sleep(100)
@@ -63,7 +64,7 @@ defmodule Traffic.Application do
     end)
   end
 
-  # Tell Phoenix to update the endpoint configuration
+  # Tell Phoenix to update the endpoint configurationp
   # whenever the application is updated.
   @impl true
   def config_change(changed, _new, removed) do

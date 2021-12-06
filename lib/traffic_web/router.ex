@@ -17,13 +17,14 @@ defmodule TrafficWeb.Router do
   scope "/", TrafficWeb do
     pipe_through :browser
 
-    get "/", PageController, :index
+    # get "/", PageController, :index
   end
 
   scope "/", TrafficWeb.Pages do
     pipe_through :browser
 
     live("/map", Map)
+    live("/", HomePage)
     live("/lofi_map/:id", LofiMap)
   end
 

@@ -41,7 +41,7 @@ defmodule TrafficWeb.ErrorHelpers do
     if count = opts[:count] do
       Gettext.dngettext(TrafficWeb.Gettext, "errors", msg, msg, count, opts)
     else
-       Gettext.dgettext(TrafficWeb.Gettext, "errors", msg, opts)
+      Gettext.dgettext(TrafficWeb.Gettext, "errors", msg, opts)
     end
   end
 end

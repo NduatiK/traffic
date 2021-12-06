@@ -78,4 +78,13 @@ defmodule Traffic.Network.Timing.Strategy do
     end)
     |> Enum.into(%{})
   end
+
+  def all() do
+    [
+      Traffic.Network.Timing.NaiveStrategy,
+      Traffic.Network.Timing.RandomizedNaiveStrategy,
+      Traffic.Network.Timing.SynchonizedStrategy,
+      Traffic.Network.Timing.RandomizedSynchonizedStrategy
+    ]
+  end
 end

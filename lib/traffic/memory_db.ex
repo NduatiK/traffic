@@ -14,8 +14,14 @@ defmodule Traffic.MemoryDB do
 
     # :ets.insert(table_name, {"count", 0, "metadata"})
 
-    catalogue = :ets.new(__MODULE__, [:set, :named_table])
-    :ets.insert(catalogue, {table_name, table_name})
+    try do
+      :ets.new(__MODULE__, [:set, :named_table, :public])
+    rescue
+      _ ->
+        nil
+    end
+
+    :ets.insert(__MODULE__, {table_name, table_name})
   end
 
   @doc """

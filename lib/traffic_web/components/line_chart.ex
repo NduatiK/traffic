@@ -12,7 +12,7 @@ defmodule TrafficWeb.Components.LineChart do
   @impl true
   def render(assigns) do
     ~F"""
-    { build_pointplot(@data, chart_opts()) }
+    {build_pointplot(@data, chart_opts())}
     """
   end
 

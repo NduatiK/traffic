@@ -105,3 +105,52 @@ input[type="range"][orient="vertical"] {
   text-decoration: none;
   cursor: pointer;
 }
+
+@layer utilities {
+  .styled-checkbox {
+    @apply text-blue-500;
+    @apply mr-2;
+    @apply focus:ring-blue-400;
+    @apply focus:ring-opacity-25;
+    @apply border;
+    @apply border-gray-300;
+    @apply rounded;
+  }
+  .styled-input {
+    @apply shadow-sm;
+    @apply appearance-none;
+    @apply relative;
+    @apply block;
+    @apply w-full;
+    @apply px-3;
+    @apply py-2;
+    @apply border;
+    @apply border-gray-300;
+    @apply bg-white;
+    @apply placeholder-gray-500;
+    @apply text-gray-900;
+    @apply rounded-md;
+    @apply focus:outline-none;
+    @apply focus:ring-blue-500;
+    @apply focus:border-blue-500;
+    @apply focus:z-10;
+    @apply sm:text-sm;
+  }
+
+  .styled-input-narrow {
+    @apply shadow-sm;
+    @apply appearance-none;
+    @apply relative;
+    @apply py-2;
+    @apply border;
+    @apply border-gray-300;
+    @apply placeholder-gray-500;
+    @apply text-gray-900;
+    @apply rounded-md;
+    @apply focus:outline-none;
+    @apply focus:ring-blue-500;
+    @apply focus:border-blue-500;
+    @apply focus:z-10;
+    @apply sm:text-sm;
+  }
+}

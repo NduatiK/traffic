@@ -3,12 +3,7 @@ defmodule Traffic.Network do
   Best followed up by a Network.build_network(name)
   """
   def start_simulation(name, opts \\ []) do
-    opts =
-      Keyword.put_new(opts, :config, %Traffic.Network.Config{
-        timing_strategy: Traffic.Network.Timing.NaiveStrategy
-      })
-
-    Traffic.Simulation.start_simulation(name, opts)
+    Traffic.Simulation.start_simulation(name, Traffic.Network.Timing.NaiveStrategy)
   end
 
   def start_simulation_and_network(name, opts \\ []) do

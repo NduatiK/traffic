@@ -16,7 +16,6 @@ defmodule Traffic.Network.Junction do
     field(:timings, %{}, default: nil)
   end
 
-
   def step(%Junction{} = junction, roads, %Config{} = config) do
     # TODO: should pass through junction
     # TODO: block if junction blocked

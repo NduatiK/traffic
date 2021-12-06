@@ -1,4 +1,5 @@
 defmodule TrafficWeb.Pages.LofiMap do
+  alias TrafficWeb.Pages.HomePage
   use TrafficWeb, :surface_view_helpers
   alias Traffic.Network.Manager
   alias Traffic.Statistics
@@ -29,7 +30,7 @@ defmodule TrafficWeb.Pages.LofiMap do
     case validate_network_id(socket, params) do
       :error ->
         socket
-        |> redirect(Routes.page_path(socket, :index))
+        |> redirect(Routes.live_path(socket, HomePage))
         |> put_flash(:error, "The simulation #{params["id"]} does not exist")
         |> then(&{:ok, &1})
 
@@ -73,15 +74,7 @@ defmodule TrafficWeb.Pages.LofiMap do
           right={6}
           :if={@show_driver_distributions}
           driver_distributions={@driver_distributions}
-        />
-        <LineGraphModal
-          top={44}
-          right={6}
-          :if={@show_driver_distributions}
-          data={TrafficWeb.Data.from_queue(@averages)}
-        />
-    
-        <PositionedDiv top={6} right={32}>
+        /> <LineGraphModal top={44} right={6} :if={@show_driver_distributions} data={TrafficWeb.Data.from_queue(@averages)} /> <PositionedDiv top={6} right={32}>
           <span>
             {@average_speed}
           </span>
@@ -134,7 +127,6 @@ defmodule TrafficWeb.Pages.LofiMap do
       average_speed
       |> :queue.in(socket.assigns.averages)
       |> :queue.drop()
-      |> IO.inspect()
 
     socket
     |> assign(:average_speed, round(average_speed, 2))

@@ -5,6 +5,7 @@ defmodule Traffic.Network.RoadServer do
   alias Traffic.Network.JunctionServer
   alias Traffic.Vehicles.VehicleServer
   alias Traffic.Network.Manager
+  import Traffic.Network.Road, only: [invert: 1]
 
   typedstruct module: Junction, enforce: true do
     field(:junction, pid())
@@ -168,7 +169,7 @@ defmodule Traffic.Network.RoadServer do
   def handle_cast({:send_into_junction, vehicle, lane}, %State{} = state) do
     road = Road.remove_vehicle(state.road, vehicle, lane)
 
-    {target, side} = Enum.random(state.junction_and_colors[lane].linked_roads)
+    {target, side} = select_road(state, lane)
 
     vehicle_data = %{future_road: {target, side, 0}, vehicle: vehicle}
 
@@ -270,7 +271,7 @@ defmodule Traffic.Network.RoadServer do
     end
   end
 
-  defp preload(name, id) do
+  defp preload(name, _id) do
     me = self()
 
     Task.async(fn ->
@@ -280,8 +281,18 @@ defmodule Traffic.Network.RoadServer do
       # {:ok, pid2}=Manager.start_vehicle(name)
       # {:ok, pid3}=Manager.start_vehicle(name)
 
-      __MODULE__.receive_vehicle(me, :left, 0, pid)
-      __MODULE__.receive_vehicle(me, :right, 0, pid1)
+      receive_vehicle(me, :left, 0, pid)
+      receive_vehicle(me, :right, 0, pid1)
     end)
+  end
+
+  def select_road(state, current_lane) do
+    case state.junction_and_colors[current_lane].linked_roads do
+      [] ->
+        {_target = self(), _target_lane = invert(current_lane)}
+
+      roads ->
+        Enum.random(roads)
+    end
   end
 end

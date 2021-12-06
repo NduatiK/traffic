@@ -52,7 +52,8 @@ defmodule Traffic.Application do
         config: %Traffic.Network.Config{
           # timing_strategy: Traffic.Network.Timing.NaiveStrategy
           # timing_strategy: Traffic.Network.Timing.RandomizedNaiveStrategy
-          timing_strategy: Traffic.Network.Timing.SynchonizedStrategy
+          # timing_strategy: Traffic.Network.Timing.SynchonizedStrategy
+          timing_strategy: Traffic.Network.Timing.RandomizedSynchonizedStrategy
         }
       )
 

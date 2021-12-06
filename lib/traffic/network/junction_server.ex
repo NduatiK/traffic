@@ -5,6 +5,8 @@ defmodule Traffic.Network.JunctionServer do
   alias Traffic.Network.Junction
   alias Traffic.Network.Timing.Strategy
 
+  import Traffic.Network.Road, only: [invert: 1]
+
   typedstruct module: State, enforce: true do
     field(:id, :any)
     field(:config, Traffic.Network.Config.t())
@@ -25,13 +27,15 @@ defmodule Traffic.Network.JunctionServer do
   @impl true
   def init(opts) do
     Process.send_after(self(), :tick, 100)
+    config = Keyword.get(opts, :config)
 
     {:ok,
      %State{
        id: Keyword.get(opts, :id),
-       config: Keyword.get(opts, :config),
+       config: config,
        x: Keyword.get(opts, :x),
-       y: Keyword.get(opts, :y)
+       y: Keyword.get(opts, :y),
+       timings: config.timing_strategy.init()
      }}
   end
 
@@ -93,7 +97,7 @@ defmodule Traffic.Network.JunctionServer do
       |> state.config.timing_strategy.tick()
       |> tap(fn timings ->
         timings
-        |> Enum.each(fn {k, _} ->
+        |> Strategy.each(fn {k, _} ->
           {road, side} = k
 
           if Strategy.get_color(state.timings, k) != Strategy.get_color(timings, k) do
@@ -118,9 +122,6 @@ defmodule Traffic.Network.JunctionServer do
       }
     }
   end
-
-  def invert(:right), do: :left
-  def invert(:left), do: :right
 
   defp add_timing(timings, {road, side}, strategy) do
     timings

@@ -57,7 +57,8 @@ defmodule Traffic.MixProject do
       # {:surface_heroicons, "~> 0.5.2"},
       {:surface, "~> 0.6", override: true},
       {:desktop, github: "elixir-desktop/desktop", tag: "v1.3.1"},
-      {:dialyxir, "~> 1.0", only: [:dev], runtime: false}
+      {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
+      {:contex, "~> 0.4.0"}
     ]
   end
 

@@ -334,6 +334,9 @@ defmodule Traffic.Network.Road do
     road
     |> Map.put(lane_name, [updated_lane])
   end
+
+  def invert(:right), do: :left
+  def invert(:left), do: :right
 end
 
 defimpl Inspect, for: Traffic.Network.Road do

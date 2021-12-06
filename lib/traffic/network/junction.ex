@@ -4,6 +4,7 @@ defmodule Traffic.Network.Junction do
   alias Traffic.Network.Road
   alias Traffic.Network.Config
   alias Traffic.Vehicles.Vehicle
+  import Traffic.Network.Road, only: [invert: 1]
 
   @type vehicle_in_junction :: %{vehicle: Vehicle.t(), target_road: atom()}
 
@@ -15,8 +16,6 @@ defmodule Traffic.Network.Junction do
     field(:timings, %{}, default: nil)
   end
 
-  def invert(:right), do: :left
-  def invert(:left), do: :right
 
   def step(%Junction{} = junction, roads, %Config{} = config) do
     # TODO: should pass through junction

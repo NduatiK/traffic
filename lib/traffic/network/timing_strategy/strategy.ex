@@ -42,4 +42,40 @@ defmodule Traffic.Network.Timing.Strategy do
     |> Map.get(:lights)
     |> elem(0)
   end
+
+  def each(state, fun) do
+    state
+    |> Enum.each(fn
+      {{road, side}, _} = kv when is_pid(road) and side in [:left, :right] ->
+        fun.(kv)
+
+      _ ->
+        nil
+    end)
+  end
+
+  def map(state, function) do
+    state
+    |> Enum.map(fn
+      {{road, side}, _} = kv when is_pid(road) and side in [:left, :right] ->
+        function.(kv)
+
+      kv ->
+        kv
+    end)
+    |> Enum.into(%{})
+  end
+
+  def map_with_index(state, function) do
+    state
+    |> Enum.with_index()
+    |> Enum.map(fn
+      {{{road, side} = _k, _v}, _i} = kvi when is_pid(road) and side in [:left, :right] ->
+        function.(kvi)
+
+      {kv, _i} ->
+        kv
+    end)
+    |> Enum.into(%{})
+  end
 end

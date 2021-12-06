@@ -19,6 +19,48 @@ defmodule Traffic.Network do
   end
 
   def build_network(name) do
+    junctions =
+      for x <- 0..4 do
+        for y <- 0..4 do
+          {:ok, junction} = start_junction(name, 50 + 200 * x, 50 + 200 * y)
+          junction
+        end
+      end
+
+    for x <- 0..3 do
+      for y <- 0..4 do
+        junction_1 =
+          junctions
+          |> Enum.at(x)
+          |> Enum.at(y)
+
+        junction_2 =
+          junctions
+          |> Enum.at(x + 1)
+          |> Enum.at(y)
+
+        {:ok, _} = start_road(name, junction_1, junction_2)
+      end
+    end
+
+    for x <- 0..4 do
+      for y <- 0..3 do
+        junction_1 =
+          junctions
+          |> Enum.at(x)
+          |> Enum.at(y)
+
+        junction_2 =
+          junctions
+          |> Enum.at(x)
+          |> Enum.at(y + 1)
+
+        {:ok, _} = start_road(name, junction_1, junction_2)
+      end
+    end
+  end
+
+  def build_network(name) do
     {:ok, junction_1} = start_junction(name, 10 * 5, 10 * 5)
     {:ok, junction_2} = start_junction(name, 50 * 5, 10 * 5)
     {:ok, junction_3} = start_junction(name, 70 * 5, 30 * 5)

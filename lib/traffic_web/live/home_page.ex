@@ -78,24 +78,24 @@ defmodule TrafficWeb.Pages.HomePage do
         <canvas id="chart-canvas" style="max-height: 600px; height: 300px" phx-update="ignore" phx-hook="LineChart" />
       </div>
       <Table data={{{name, process_info}, index} <- @processes} bordered expanded id="table">
-      <Column label="">
-        <div class="rounded-full w-2 h-2" style={"background: #{color_at(index)}"} />
-      </Column>
-      <Column label="Simulations">
-        {process_info.label}
-      </Column>
-      <Column label="Strategy">
-        {strategy_name(process_info.strategy)}
-      </Column>
-      <Column label="Wait Time">
-        {process_info.wait_time}
-      </Column>
-      <Column label="">
-        <Link class="text-sm text-blue-500" to={Routes.live_path(@socket, LofiMap, name)}>
-          VIEW
-        </Link>
-      </Column>
-    </Table>
+        <Column label="">
+          <div class="rounded-full w-2 h-2" style={"background: #{color_at(index)}"} />
+        </Column>
+        <Column label="Simulations">
+          {process_info.label}
+        </Column>
+        <Column label="Strategy">
+          {strategy_name(process_info.strategy)}
+        </Column>
+        <Column label="Wait Time">
+          {process_info.wait_time}
+        </Column>
+        <Column label="">
+          <Link class="text-sm text-blue-500" to={Routes.live_path(@socket, LofiMap, name)}>
+            VIEW
+          </Link>
+        </Column>
+      </Table>
 
       <button
         class="mt-4 bg-blue-400 bg-opacity-50 hover:bg-opacity-75 transition-colors duration-200 rounded font-semibold py-2 px-4 inline-flex"

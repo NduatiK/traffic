@@ -92,8 +92,13 @@ defmodule TrafficWeb.Components.Table do
 
   def render(assigns) do
     ~F"""
-    <div class={@class,"w-full": @expanded}>
-      <Row :if={@paginated || slot_assigned?(:title)} align="center" distribute="between" class={"pt-1" <> if @paginated, do: " pb-1", else: ""}>
+    <div class={@class, "w-full": @expanded}>
+      <Row
+        :if={@paginated || slot_assigned?(:title)}
+        align="center"
+        distribute="between"
+        class={"pt-1" <> if @paginated, do: " pb-1", else: ""}
+      >
         <slot name="title" />
         <nav class="flex items-center" :if={@paginated}>
           <span
@@ -149,20 +154,15 @@ defmodule TrafficWeb.Components.Table do
               <th
                 :for={col <- @cols}
                 scope="col"
-                class={
-                  "bg-gray-50 px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                }
+                class="bg-gray-50 px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
                 {col.label}
               </th>
             </tr>
           </thead>
           <tbody :if={not Enum.empty?(@data)} class="sm:rounded-lg divide-y divide-gray-200">
-            <tr
-              :for={item <- @data}
-              class={"odd:bg-white even:bg-gray-100": @striped}
-            >
-              {!--<td :for.index={index <- @cols} class={"px-3 py-2 ", col_class_fun(@col_class).(index)}>--}
+            <tr :for={item <- @data} class={"odd:bg-white even:bg-gray-100": @striped}>
+              {!-- <td :for.index={index <- @cols} class={"px-3 py-2 ", col_class_fun(@col_class).(index)}> --}
               <td :for.index={index <- @cols} class="px-3 py-2">
                 <div class="inline-block"><#slot name="cols" index={index} :args={item: item} /></div>
               </td>

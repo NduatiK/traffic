@@ -319,20 +319,24 @@ defmodule Traffic.Network.Road do
   end
 
   def remove_vehicle(road, vehicle, lane_name) do
-    updated_lane =
+    {updated_lane, found_vehicle} =
       road
       |> Map.get(lane_name)
       |> Enum.flat_map(& &1)
-      |> Enum.flat_map(fn {%{speed: _, vehicle: pid}, _} = vehicle_data ->
+      |> Enum.reduce({[], nil}, fn {%{speed: _, vehicle: pid} = v, _} = vehicle_data,
+                                   {acc_list, acc_vehicle} ->
         if pid == vehicle do
-          []
+          {acc_list, v}
         else
-          [vehicle_data]
+          {[vehicle_data | acc_list], acc_vehicle}
         end
       end)
 
-    road
-    |> Map.put(lane_name, [updated_lane])
+    {
+      road
+      |> Map.put(lane_name, [updated_lane|>Enum.reverse()]),
+      found_vehicle
+    }
   end
 
   def invert(:right), do: :left

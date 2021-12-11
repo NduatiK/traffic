@@ -1,11 +1,24 @@
 Compiling 1 file (.ex)
-[22m08:12:23.452 [info] Running TrafficWeb.Endpoint with cowboy 2.9.0 at 127.0.0.1:4001 (http)
-[0m[22m08:12:23.457 [info] Access TrafficWeb.Endpoint at http://example.com
+[22m[info] Running TrafficWeb.Endpoint with cowboy 2.9.0 at 127.0.0.1:4001 (http)
+[0m[22m[info] Access TrafficWeb.Endpoint at http://localhost:4001
 [0mInteractive Elixir (1.13.0) - press Ctrl+C to exit (type h() ENTER for help)
-iex(1)> [22m08:12:24.136 request_id=Fr-ekyCo6uQPDiIAAAIj [info] GET /
-[0miex(1)> [22m08:12:24.140 [info] CONNECTED TO Phoenix.LiveView.Socket in 102µs
+iex(1)> [watch] build finished, watching for changes...iex(1)> 
+iex(1)> 
+iex(1)> Rebuilding...
+iex(1)> Done in 658ms.
+iex(1)> [22m[info] CONNECTED TO Phoenix.LiveView.Socket in 921µs
   Transport: :websocket
   Serializer: Phoenix.Socket.V2.JSONSerializer
-  Parameters: %{"_csrf_token" => "JzUZGhs0HyMFGU54OyNzeywkPgZdZyAJCDmOZXzRUA4NzQ5IYR_6-0MK", "_mounts" => "2", "_track_static" => %{"0" => "http://localhost:4001/assets/app-018feca11e6450d6417c42342143913c.css?vsn=d", "1" => "http://localhost:4001/assets/app-40f63cf258153ab147faba721dfbf5b5.js?vsn=d"}, "vsn" => "2.0.0"}
-[0miex(1)> [22m08:12:24.172 request_id=Fr-ekyCo6uQPDiIAAAIj [info] Sent 200 in 40ms
+  Parameters: %{"_csrf_token" => "PQobDDwCI340NCMyRXRXIwwIBRAYFgQUxzj_DVM0_DTmhCnZJrfQNsep", "_mounts" => "0", "_track_static" => %{"0" => "http://localhost:4001/assets/app.css", "1" => "http://localhost:4001/assets/app.js"}, "vsn" => "2.0.0"}
+[0miex(1)> [22m[info] CONNECTED TO Phoenix.LiveView.Socket in 16ms
+  Transport: :websocket
+  Serializer: Phoenix.Socket.V2.JSONSerializer
+  Parameters: %{"_csrf_token" => "PQobDDwCI340NCMyRXRXIwwIBRAYFgQUxzj_DVM0_DTmhCnZJrfQNsep", "_mounts" => "1", "_track_static" => %{"0" => "http://localhost:4001/assets/app.css", "1" => "http://localhost:4001/assets/app.js"}, "vsn" => "2.0.0"}
+[0miex(1)> "pausing"
+iex(1)> "paused"
+iex(1)> [22m[info] GET /lofi_map/SynchonizedStrategy
+[0miex(1)> [36m[debug] Processing with Phoenix.LiveView.Plug.Elixir.TrafficWeb.Pages.LofiMap/2
+  Parameters: %{"id" => "SynchonizedStrategy"}
+  Pipelines: [:browser]
+[0miex(1)> [22m[info] Sent 200 in 1841ms
 [0miex(1)> Terminate batch job (Y/N)? 

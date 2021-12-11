@@ -1,4 +1,4 @@
-// Source: https://dev.to/mnishiguchi/real-time-charting-with-elixir-phoenixliveview-chartjs-b4c
+// Adapted from: https://dev.to/mnishiguchi/real-time-charting-with-elixir-phoenixliveview-chartjs-b4c
 
 
 // https://www.chartjs.org/docs/3.6.1/getting-started/integration.html#bundlers-webpack-rollup-etc
@@ -14,7 +14,7 @@ Chart.defaults.font.family = "Inter, sans-serif,sanss";
 // A wrapper of Chart.js that configures the realtime line chart.
 export default class {
   constructor(ctx, showLabels = true) {
-    this.showLabels = showLabels;
+    showLabels;
     this.colors = [
       'rgba(255, 99, 132, 1)',
       'rgba(54, 162, 235, 1)',
@@ -78,9 +78,20 @@ export default class {
   _createDataset(label) {
     const newDataset = {
       label, data: [], borderColor: this.colors.pop(),
-      hidden: this.showLabels,
+      hidden: this._shouldHide(label),
     }
     this.chart.data.datasets.push(newDataset)
     return newDataset
+  }
+
+  _shouldHide(label) {
+    console.log(label)
+    return !this.showLabels && !([
+      "NaiveStrategy",
+      "RandomizedNaiveStrategy",
+      "SynchonizedStrategy",
+      "RandomizedSynchonizedStrategy",
+      "Average Speed"
+    ].includes(label))
   }
 }

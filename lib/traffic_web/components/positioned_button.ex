@@ -10,7 +10,7 @@ defmodule TrafficWeb.Components.PositionedButton do
   def render(assigns) do
     ~F"""
     <button
-      class="rounded p-2 bg-white shadow absolute"
+      class="rounded p-2 bg-white shadow absolute border"
       style={top: "#{@top / 4}rem", right: "#{@right / 4}rem"}
       :on-click={@click}
     >

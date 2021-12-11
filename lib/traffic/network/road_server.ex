@@ -165,7 +165,7 @@ defmodule Traffic.Network.RoadServer do
 
   @impl true
   def handle_cast({:send_into_junction, vehicle, lane}, %State{} = state) do
-    road = Road.remove_vehicle(state.road, vehicle, lane)
+    {road, _} = Road.remove_vehicle(state.road, vehicle, lane)
 
     {target, _arterial, side} = select_road(state, lane)
 

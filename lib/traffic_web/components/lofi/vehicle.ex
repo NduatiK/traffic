@@ -11,7 +11,7 @@ defmodule TrafficWeb.Components.Lofi.Vehicle do
 
   def render(assigns) do
     ~F"""
-    <svg version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" data[vehicle]="true">
+    <svg phx-value-vehicle={inspect(@vehicle.vehicle)} style="cursor:pointer" :on-click="focus-on-vehicle" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" data[vehicle]="true">
       <rect x={round(@x)} y={round(@y)} width={1} height={3} stroke="blue" stroke-width={2} fill="blue" />
     </svg>
     """

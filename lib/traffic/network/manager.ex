@@ -93,9 +93,7 @@ defmodule Traffic.Network.Manager do
   def reset_network(name) when is_atom(name) do
     config = get_config(name)
     Traffic.Network.NetworkSupervisor.stop(name)
-    # Traffic.Statistics.reset(name)
     Traffic.Network.start_simulation_and_network(name, config.timing_strategy)
-    # Traffic.Network.start_simulation(name, config: config)
   end
 
   def get_pause_status(manager) do
@@ -206,7 +204,7 @@ defmodule Traffic.Network.Manager do
     |> DynamicSupervisor.which_children()
     |> Enum.each(fn
       {_, pid, :worker, _} ->
-        GenServer.cast(pid, :pause)
+        Task.async(fn -> GenServer.cast(pid, :pause) end)
 
       _ ->
         nil
@@ -217,6 +215,13 @@ defmodule Traffic.Network.Manager do
 
   @impl true
   def handle_info(:tick, %State{} = state) do
+    # Process.send_after(self(), :tick, 100)
+    # IO.inspect(:tick)
+    {:noreply, state}
+  end
+
+  @impl true
+  def handle_info(_, %State{} = state) do
     # Process.send_after(self(), :tick, 100)
     # IO.inspect(:tick)
     {:noreply, state}

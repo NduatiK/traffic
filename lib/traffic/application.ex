@@ -69,7 +69,7 @@ defmodule Traffic.Application do
         Traffic.Network.Timing.RandomizedSynchonizedStrategy
       )
 
-      for i <- 0..10 do
+      for i <- 1..10 do
         Traffic.Network.start_simulation_and_network(
           :"Genetic#{i}",
           Traffic.Network.Timing.GeneticEvolutionStrategy

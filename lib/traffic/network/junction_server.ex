@@ -29,6 +29,11 @@ defmodule Traffic.Network.JunctionServer do
     Process.send_after(self(), :tick, 100)
     config = Keyword.get(opts, :config)
 
+    if config.timing_strategy == GeneticEvolutionStrategy do
+      sim_name = Keyword.get(opts, :name)
+      Traffic.Evolution.register_junction(sim_name, {self(), Keyword.get(opts, :id)})
+    end
+
     {:ok,
      %State{
        id: Keyword.get(opts, :id),
@@ -41,6 +46,14 @@ defmodule Traffic.Network.JunctionServer do
 
   def get_location(server) do
     GenServer.call(server, :get_location)
+  end
+
+  def get_timing_config(server) do
+    GenServer.call(server, :get_timing_config)
+  end
+
+  def set_timing_config(server, config) do
+    GenServer.call(server, {:set_timing_config, config})
   end
 
   def get_distance(junction1, junction2) do
@@ -63,6 +76,22 @@ defmodule Traffic.Network.JunctionServer do
   @impl true
   def handle_call(:get_location, _from, %State{} = state) do
     {:reply, {state.x, state.y}, state}
+  end
+
+  @impl true
+  def handle_call(:get_timing_config, _from, %State{} = state) do
+    {:reply, state.timings, state}
+  end
+
+  @impl true
+  def handle_call({:set_timing_config, timings}, _from, %State{} = state) do
+    {:reply,
+     %{
+       state
+       | timings:
+           timings
+           |> Map.put(:meta, timings.meta)
+     }, state}
   end
 
   @impl true

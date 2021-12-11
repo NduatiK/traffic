@@ -15,9 +15,12 @@ defmodule TrafficWeb.Pages.HomePage do
   alias TrafficWeb.Components.Table.Column
   alias TrafficWeb.Pages.LofiMap
 
-  data processes, :list, default: []
+  data processes, :list, default: [[]]
   data show_modal, :boolean, default: false
   data changeset, :map
+  data(page_number, :integer, default: 0)
+
+  @page_size 10
 
   defmodule FormData do
     use Ecto.Schema
@@ -42,7 +45,8 @@ defmodule TrafficWeb.Pages.HomePage do
     socket
     |> schedule_list_update(0)
     |> assign(changeset: changeset)
-    |> then(&{:ok, &1, temporary_assigns: [processes: []]})
+    # |> then(&{:ok, &1, temporary_assigns: [processes: []]})
+    |> then(&{:ok, &1})
   end
 
   @impl true
@@ -77,7 +81,16 @@ defmodule TrafficWeb.Pages.HomePage do
       <div style="max-height: 600px; height: 300px">
         <canvas id="chart-canvas" style="max-height: 600px; height: 300px" phx-update="ignore" phx-hook="LineChart" />
       </div>
-      <Table data={{{name, process_info}, index} <- @processes} bordered expanded id="table">
+      <Table
+
+      data={{{name, process_info}, index} <- Enum.at(@processes, @page_number)}
+
+
+      on_set_page="select_page"
+        page_number={@page_number}
+        total_pages={Enum.count(@processes)}
+
+      bordered expanded paginated id="table">
         <Column label="">
           <div class="rounded-full w-2 h-2" style={"background: #{color_at(index)}"} />
         </Column>
@@ -114,6 +127,17 @@ defmodule TrafficWeb.Pages.HomePage do
     socket
     |> assign(path: path)
     |> then(&{:noreply, &1})
+  end
+
+  def handle_event("select_page", %{"page" => page}, socket) do
+    page_count = Enum.count(socket.assigns.processes)
+
+    with {page, ""} when page >= 0 and page_count > page <- Integer.parse(page) do
+      {:noreply, assign(socket, :page_number, page)}
+    else
+      _ ->
+        {:noreply, socket}
+    end
   end
 
   @impl true
@@ -171,7 +195,11 @@ defmodule TrafficWeb.Pages.HomePage do
 
   @impl true
   def handle_info(:update_list, socket) do
-    processes = Traffic.SimulationList.get_list()
+    processes =
+      Traffic.SimulationList.get_list()
+      |> Enum.with_index()
+      |> Enum.reverse()
+      |> Enum.chunk_every(@page_size)
 
     socket =
       Traffic.SimulationList.get_list()
@@ -186,7 +214,7 @@ defmodule TrafficWeb.Pages.HomePage do
 
     socket
     |> schedule_list_update()
-    |> assign(processes: Enum.with_index(processes))
+    |> assign(processes: processes)
     |> then(&{:noreply, &1})
   end
 

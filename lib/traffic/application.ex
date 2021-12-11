@@ -14,13 +14,14 @@ defmodule Traffic.Application do
       # Start the Telemetry supervisor
       TrafficWeb.Telemetry,
       # Start the PubSub system
+      {Registry, keys: :unique, name: Registry.Traffic},
       {Phoenix.PubSub, name: Traffic.PubSub},
       # Start the Endpoint (http/https)
       TrafficWeb.Endpoint,
       # Start a network server
       {Traffic.Simulation, []},
       {Traffic.SimulationList, []},
-      {Registry, keys: :unique, name: Registry.Traffic}
+      {Traffic.Evolution, []}
       # ,
       # {
       #   Desktop.Window,
@@ -69,7 +70,7 @@ defmodule Traffic.Application do
         Traffic.Network.Timing.RandomizedSynchonizedStrategy
       )
 
-      for i <- 1..10 do
+      for i <- 1..15 do
         Traffic.Network.start_simulation_and_network(
           :"Genetic#{i}",
           Traffic.Network.Timing.GeneticEvolutionStrategy

@@ -1,6 +1,6 @@
 defmodule Traffic.Statistics do
   alias Traffic.MemoryDB
-
+  @queue_len 10
   def table_name(simulation_name), do: :"#{__MODULE__}.#{simulation_name}"
 
   def start_up(simulation_name) do
@@ -19,10 +19,19 @@ defmodule Traffic.Statistics do
   end
 
   def update_wait_time(simulation_name, vehicle_name, wait_time) do
-    MemoryDB.update(table_name(simulation_name), vehicle_name, {wait_time, 0}, fn
-      {old_wait_time, count} ->
-        {old_wait_time + wait_time, count + 1}
-    end)
+    queue = :queue.from_list(List.duplicate(wait_time, @queue_len))
+
+    MemoryDB.update(
+      table_name(simulation_name),
+      vehicle_name,
+      queue,
+      fn
+        queue ->
+          wait_time
+          |> :queue.in(queue)
+          |> :queue.drop()
+      end
+    )
   end
 
   def get_average_wait_time(simulation_name) do
@@ -36,8 +45,9 @@ defmodule Traffic.Statistics do
     vehicles
     |> Enum.reduce(
       {0, 0},
-      fn {sum, count}, {acc_sum, acc_count} ->
-        {sum + acc_sum, count + acc_count}
+      fn queue, {acc_sum, acc_count} ->
+        sum = queue |> :queue.to_list() |> Enum.sum()
+        {sum + acc_sum, @queue_len + acc_count}
       end
     )
     |> average()

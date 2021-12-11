@@ -10,4 +10,8 @@ defmodule Traffic do
   def via_tuple(module, unique_name) do
     {:via, Registry, {Registry.Traffic, {module, unique_name}}}
   end
+
+  def via_tuple(module) do
+    {:via, Registry, {Registry.Traffic, {module}}}
+  end
 end

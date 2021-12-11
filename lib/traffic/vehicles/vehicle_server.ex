@@ -78,10 +78,12 @@ defmodule Traffic.Vehicles.VehicleServer do
   def get_vision(server) do
     GenServer.call(server, :get_vision)
   end
+
   @impl true
-  def handle_call(:get_vision, _from,%State{} = state) do
+  def handle_call(:get_vision, _from, %State{} = state) do
     {:reply, state.visual_knowledge, state}
   end
+
   @impl true
   def handle_cast(:pause, %State{} = state) do
     if state.paused do
@@ -90,8 +92,6 @@ defmodule Traffic.Vehicles.VehicleServer do
 
     {:noreply, %{state | paused: not state.paused}}
   end
-
-
 
   @impl true
   def handle_cast({:send_road_details, opts}, %State{} = state) do

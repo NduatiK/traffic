@@ -32,18 +32,18 @@ defmodule Traffic.Network.Timing.GeneticEvolutionStrategy do
 
   @impl Strategy
   def add_road(state, road) do
+    green = 25 + :rand.uniform(200 - 50)
+
+    road_state = %RoadState{
+      lights: {:red, :yellow},
+      last_change: 0,
+      time_in_yellow: 25,
+      time_in_green: green,
+      time_in_red: 200 - green
+    }
+
     state
-    |> Map.put(
-      road,
-      %RoadState{
-        lights: {:red, :yellow},
-        last_change: 0,
-        time_in_yellow: 25,
-        time_in_green: 100,
-        time_in_red: 100,
-        start_after: 0
-      }
-    )
+    |> Map.put(road, road_state)
     |> map_with_index(fn {{k, v}, i} ->
       {k,
        %{
@@ -101,6 +101,7 @@ defmodule Traffic.Network.Timing.GeneticEvolutionStrategy do
 
   defmodule GE do
     use TypedStruct
+    alias Traffic.Statistics
 
     typedstruct module: Chromosome do
       alias Traffic.Network.Timing.GeneticEvolutionStrategy.RoadState
@@ -109,23 +110,18 @@ defmodule Traffic.Network.Timing.GeneticEvolutionStrategy do
       field(:timings, list({RoadState, integer()}))
     end
 
-    alias Traffic.Statistics
-    # population of simulations
     def evolve(population, opts) do
-      :timer.sleep(30_000)
-
       population
       |> evaluation(opts)
       |> selection(opts)
       |> crossover(opts)
       |> mutation(opts)
-      |> share()
-      |> evolve(opts)
     end
 
     defp evaluation(population, _opts) do
       population
-      |> Enum.sort_by(&Statistics.get_average_wait_time(&1.name), :desc)
+      |> Enum.sort_by(&elem(&1, 1), :asc)
+      |> Enum.map(&elem(&1, 0))
     end
 
     defp selection(population, _opts) do
@@ -134,15 +130,32 @@ defmodule Traffic.Network.Timing.GeneticEvolutionStrategy do
       |> Enum.map(&List.to_tuple/1)
     end
 
+    defp crossover(population, _opts) do
+      Enum.reduce(population, [], fn {{{road1, chromosomes_1}, pid1},
+                                      {{road2, chromosomes_2}, pid2}},
+                                     acc ->
+        crossover_point = :rand.uniform(Enum.count(chromosomes_1))
+        {h1, t1} = Enum.split(chromosomes_1, crossover_point)
+        {h2, t2} = Enum.split(chromosomes_2, crossover_point)
+
+        [
+          {{road1, h1 ++ t2}, pid1},
+          {{road2, h2 ++ t1}, pid2}
+          | acc
+        ]
+      end)
+    end
+
     defp mutation(population, _opts) do
       population
-      |> Enum.map(fn chromosome ->
+      |> Enum.map(fn {{road, chromosome}, pid} ->
         if :rand.uniform() < 0.05 do
-          chromosome.timings
-          |> Enum.count()
-          |> randomize_chromosome()
+          {{road,
+            chromosome
+            |> Enum.count()
+            |> randomize_chromosome()}, pid}
         else
-          chromosome
+          {{road, chromosome}, pid}
         end
       end)
     end
@@ -150,9 +163,9 @@ defmodule Traffic.Network.Timing.GeneticEvolutionStrategy do
     defp randomize_chromosome(road_count) do
       1..road_count
       |> Enum.map(fn i ->
-        green = 5 + :rand.uniform(250)
+        green = 25 + :rand.uniform(200 - 50)
 
-        %RoadState{
+        state = %RoadState{
           lights:
             if i == 0 do
               {:green, :yellow}
@@ -162,7 +175,7 @@ defmodule Traffic.Network.Timing.GeneticEvolutionStrategy do
           last_change: 0,
           time_in_yellow: 25,
           time_in_green: green,
-          time_in_red: 260 - green
+          time_in_red: 200 - green
         }
       end)
       |> synchronize_lights()
@@ -183,20 +196,6 @@ defmodule Traffic.Network.Timing.GeneticEvolutionStrategy do
             last_change: i * 100,
             start_after: if(i == 0, do: 0, else: total_time - road.time_in_green)
         }
-      end)
-    end
-
-    defp crossover(population, _opts) do
-      Enum.reduce(population, [], fn {p1, p2}, acc ->
-        crossover_point = :rand.uniform(1000)
-        {h1, t1} = Enum.split(p1.timings, crossover_point)
-        {h2, t2} = Enum.split(p2.timings, crossover_point)
-
-        [
-          %{p1 | timings: synchronize_lights(h1 ++ t2)},
-          %{p2 | timings: synchronize_lights(h2 ++ t1)}
-          | acc
-        ]
       end)
     end
 

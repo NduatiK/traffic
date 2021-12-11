@@ -334,7 +334,7 @@ defmodule Traffic.Network.Road do
 
     {
       road
-      |> Map.put(lane_name, [updated_lane|>Enum.reverse()]),
+      |> Map.put(lane_name, [updated_lane |> Enum.reverse()]),
       found_vehicle
     }
   end

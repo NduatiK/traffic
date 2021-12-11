@@ -47,20 +47,34 @@ defmodule Traffic.Application do
     # Desktop.identify_default_locale(TrafficWeb.Gettext)
 
     Task.async(fn ->
-      # :observer.start()
       :timer.sleep(1000)
 
-      Traffic.Simulation.start_simulation(
-        :default,
-        # timing_strategy: Traffic.Network.Timing.NaiveStrategy
-        # timing_strategy: Traffic.Network.Timing.RandomizedNaiveStrategy
-        # timing_strategy: Traffic.Network.Timing.SynchonizedStrategy
+      Traffic.Network.start_simulation_and_network(
+        :NaiveStrategy,
+        Traffic.Network.Timing.NaiveStrategy
+      )
+
+      Traffic.Network.start_simulation_and_network(
+        :RandomizedNaiveStrategy,
+        Traffic.Network.Timing.RandomizedNaiveStrategy
+      )
+
+      Traffic.Network.start_simulation_and_network(
+        :SynchonizedStrategy,
+        Traffic.Network.Timing.SynchonizedStrategy
+      )
+
+      Traffic.Network.start_simulation_and_network(
+        :RandomizedSynchonizedStrategy,
         Traffic.Network.Timing.RandomizedSynchonizedStrategy
       )
 
-      :timer.sleep(100)
-
-      Traffic.Network.build_network(:default)
+      for i <- 0..10 do
+        Traffic.Network.start_simulation_and_network(
+          :"Genetic#{i}",
+          Traffic.Network.Timing.GeneticEvolutionStrategy
+        )
+      end
     end)
   end
 

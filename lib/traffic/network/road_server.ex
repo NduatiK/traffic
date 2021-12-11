@@ -29,10 +29,11 @@ defmodule Traffic.Network.RoadServer do
   # Server (callbacks)
   @impl true
   def init(opts) do
+    Process.send_after(self(), :broadcast, 1000)
+
     preload(Keyword.get(opts, :name), Keyword.get(opts, :id))
     from = Keyword.get(opts, :junction1)
     to = Keyword.get(opts, :junction2)
-
     length = JunctionServer.get_distance(from, to)
 
     road =
@@ -40,9 +41,6 @@ defmodule Traffic.Network.RoadServer do
         :"road_#{Keyword.get(opts, :name)}_#{Keyword.get(opts, :id)}",
         length
       )
-
-    TrafficWeb.Endpoint.subscribe("junction_#{inspect(from)}")
-    TrafficWeb.Endpoint.subscribe("junction_#{inspect(to)}")
 
     {:ok,
      %State{
@@ -75,7 +73,7 @@ defmodule Traffic.Network.RoadServer do
     GenServer.call(server, :get_road_and_lights)
   end
 
-  def add_linked_road(server, {side, road_side}, road) do
+  def add_linked_road({server, _}, {side, road_side}, road) do
     GenServer.cast(server, {:add_linked_road, {side, road_side}, road})
   end
 
@@ -152,13 +150,13 @@ defmodule Traffic.Network.RoadServer do
   end
 
   @impl true
-  def handle_cast({:add_linked_road, {my_side, road_side}, road}, %State{} = state) do
+  def handle_cast({:add_linked_road, {my_side, road_side}, {road, arterial}}, %State{} = state) do
     junction_and_colors =
       state.junction_and_colors
       |> Map.update!(my_side, fn map ->
         map
         |> Map.update!(:linked_roads, fn roads ->
-          [{road, road_side} | roads]
+          [{road, arterial, road_side} | roads]
         end)
       end)
 
@@ -169,7 +167,7 @@ defmodule Traffic.Network.RoadServer do
   def handle_cast({:send_into_junction, vehicle, lane}, %State{} = state) do
     road = Road.remove_vehicle(state.road, vehicle, lane)
 
-    {target, side} = select_road(state, lane)
+    {target, _arterial, side} = select_road(state, lane)
 
     vehicle_data = %{future_road: {target, side, 0}, vehicle: vehicle}
 
@@ -218,6 +216,18 @@ defmodule Traffic.Network.RoadServer do
 
     {:noreply, %{state | road: road}}
   end
+
+  # @impl true
+  # def handle_info(:broadcast, state) do
+  #   Process.send_after(self(), :broadcast, 100)
+
+  #   Phoenix.PubSub.broadcast(Traffic.PubSub, "road_#{inspect(self())}", {
+  #     __MODULE__,
+  #     %{pid: self()}
+  #   })
+
+  #   {:noreply, state}
+  # end
 
   @impl true
   def handle_info(_, state) do
@@ -292,7 +302,33 @@ defmodule Traffic.Network.RoadServer do
         {_target = self(), _target_lane = invert(current_lane)}
 
       roads ->
-        Enum.random(roads)
+        weighted_random(roads)
     end
+  end
+
+  defp weighted_arterial({_, arterial, _}) do
+    if arterial, do: 10000, else: 1
+  end
+
+  defp weighted_random(roads) do
+    distribution_range =
+      roads
+      |> Enum.map(&weighted_arterial/1)
+      |> Enum.sum()
+
+    random_number = :rand.uniform_real() * distribution_range
+
+    roads
+    |> Enum.map(&{&1, weighted_arterial(&1)})
+    |> Enum.reduce_while(0, fn
+      # stop when the the random number is between
+      # the upper and lower bounds of the profile
+      {generator, size}, lower_bound when random_number <= lower_bound + size ->
+        {:halt, generator}
+
+      # otherwise move to next profile
+      {_, size}, lower_bound ->
+        {:cont, lower_bound + size}
+    end)
   end
 end

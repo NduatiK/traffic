@@ -16,7 +16,7 @@ defmodule TrafficWeb.Pages.HomePage do
   alias TrafficWeb.Pages.LofiMap
 
   data processes, :list, default: []
-  data show_modal, :boolean, default: true
+  data show_modal, :boolean, default: false
   data changeset, :map
 
   defmodule FormData do
@@ -72,21 +72,31 @@ defmodule TrafficWeb.Pages.HomePage do
         </:footer>
       </Dialog>
     </Form>
-    <div class="p-4 md:p-12">
+    <div class="container mx-auto p-4 md:pt-12">
       <h1 class="mb-4 text-xl">Traffique</h1>
-      <Table data={{name, process_info} <- @processes} bordered expanded>
-        <Column label="Simulations">
-          {name}
-        </Column>
-        <Column label="Strategy">
-          {strategy_name(process_info.strategy)}
-        </Column>
-        <Column label="">
-          <Link class="text-sm text-blue-500" to={Routes.live_path(@socket, LofiMap, name)}>
-            VIEW
-          </Link>
-        </Column>
-      </Table>
+      <div style="max-height: 600px; height: 300px">
+        <canvas id="chart-canvas" style="max-height: 600px; height: 300px" phx-update="ignore" phx-hook="LineChart" />
+      </div>
+      <Table data={{{name, process_info}, index} <- @processes} bordered expanded id="table">
+      <Column label="">
+        <div class="rounded-full w-2 h-2" style={"background: #{color_at(index)}"} />
+      </Column>
+      <Column label="Simulations">
+        {process_info.label}
+      </Column>
+      <Column label="Strategy">
+        {strategy_name(process_info.strategy)}
+      </Column>
+      <Column label="Wait Time">
+        {process_info.wait_time}
+      </Column>
+      <Column label="">
+        <Link class="text-sm text-blue-500" to={Routes.live_path(@socket, LofiMap, name)}>
+          VIEW
+        </Link>
+      </Column>
+    </Table>
+
       <button
         class="mt-4 bg-blue-400 bg-opacity-50 hover:bg-opacity-75 transition-colors duration-200 rounded font-semibold py-2 px-4 inline-flex"
         :on-click="open_modal"
@@ -104,11 +114,6 @@ defmodule TrafficWeb.Pages.HomePage do
     socket
     |> assign(path: path)
     |> then(&{:noreply, &1})
-  end
-
-  def schedule_list_update(socket, delay \\ 1000) do
-    Process.send_after(self(), :update_list, delay)
-    socket
   end
 
   @impl true
@@ -151,7 +156,7 @@ defmodule TrafficWeb.Pages.HomePage do
       strategy = Ecto.Changeset.get_field(changeset, :strategy)
       name = Ecto.Changeset.get_field(changeset, :name)
 
-      Traffic.Simulation.start_simulation(:"#{name}", strategy)
+      Traffic.Network.start_simulation_and_network(:"#{name}", strategy)
 
       socket
       |> schedule_list_update(0)
@@ -166,9 +171,22 @@ defmodule TrafficWeb.Pages.HomePage do
 
   @impl true
   def handle_info(:update_list, socket) do
+    processes = Traffic.SimulationList.get_list()
+
+    socket =
+      Traffic.SimulationList.get_list()
+      |> Enum.reverse()
+      |> Enum.reduce(socket, fn {_name, process_info}, socket ->
+        socket
+        |> push_event(
+          "new-point",
+          %{label: process_info.label, value: process_info.wait_time}
+        )
+      end)
+
     socket
     |> schedule_list_update()
-    |> assign(processes: Traffic.SimulationList.get_list())
+    |> assign(processes: Enum.with_index(processes))
     |> then(&{:noreply, &1})
   end
 
@@ -178,5 +196,23 @@ defmodule TrafficWeb.Pages.HomePage do
     |> String.split(".")
     |> Enum.reverse()
     |> hd()
+  end
+
+  @colors [
+            "rgba(255, 99, 132, 1)",
+            "rgba(54, 162, 235, 1)",
+            "rgba(255, 206, 86, 1)",
+            "rgba(75, 192, 192, 1)",
+            "rgba(153, 102, 255, 1)",
+            "rgba(255, 159, 64, 1)"
+          ]
+          |> Enum.reverse()
+  def color_at(index) do
+    Enum.at(@colors, rem(index, Enum.count(@colors)))
+  end
+
+  def schedule_list_update(socket, delay \\ 1500) do
+    Process.send_after(self(), :update_list, delay)
+    socket
   end
 end

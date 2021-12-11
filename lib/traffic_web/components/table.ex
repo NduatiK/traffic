@@ -26,11 +26,11 @@ defmodule TrafficWeb.Components.Table do
     </Column>
   </Table>
   \"\"\"
-  
+
   ```
   """
 
-  use Surface.Component
+  use Surface.LiveComponent
   @doc "The data that populates the table"
   prop(data, :list, required: true)
 
@@ -56,8 +56,9 @@ defmodule TrafficWeb.Components.Table do
   prop(col_class, :fun)
 
   slot(title)
-  slot(cols, args: [item: ^data], required: true)
+  slot(empty_state)
   @doc "The columns of the table"
+  slot(cols, args: [item: ^data], required: true)
 
   prop(page_number, :integer, default: 0)
   prop(total_pages, :integer, default: 1)
@@ -91,11 +92,9 @@ defmodule TrafficWeb.Components.Table do
 
   def render(assigns) do
     ~F"""
-    <div class={@class}>
-      <Row align="center" distribute="between" class={"pt-1" <> if @paginated, do: " pb-1", else: ""}>
-        <div>
-          <slot name="title" />
-        </div>
+    <div class={@class,"w-full": @expanded}>
+      <Row :if={@paginated || slot_assigned?(:title)} align="center" distribute="between" class={"pt-1" <> if @paginated, do: " pb-1", else: ""}>
+        <slot name="title" />
         <nav class="flex items-center" :if={@paginated}>
           <span
             :on-click={@on_set_page}
@@ -136,15 +135,14 @@ defmodule TrafficWeb.Components.Table do
         </nav>
       </Row>
       <div class={
-        "container flex flex-col mt-1 w-full  bg-white dark:bg-gray-800 sm:rounded-lg shadow-md border border-gray-300",
+        "flex flex-col mt-1 w-full  bg-white sm:rounded-lg shadow-md border border-gray-300",
         @class,
         "border shadow-md border-gray-300": @bordered
       }>
         <table class={
           "min-w-full",
           "w-full": @expanded,
-          "divide-y divide-gray-300": @bordered,
-          "is-striped": @striped
+          "divide-y divide-gray-300": @bordered
         }>
           <thead style="overflow: clip" class="sm:rounded-t-lg">
             <tr>
@@ -152,32 +150,32 @@ defmodule TrafficWeb.Components.Table do
                 :for={col <- @cols}
                 scope="col"
                 class={
-                  col[:class] || "",
-                  "bg-gray-50 px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider",
-                  col_class_fun(@col_class).(-1)
+                  "bg-gray-50 px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                 }
               >
                 {col.label}
               </th>
             </tr>
           </thead>
-          <tbody class="sm:rounded-lg divide-y divide-gray-200">
-            <tr :for={{item, index} <- Enum.with_index(@data)} class={row_class_fun(@row_class).(item, index)}>
-              <td :for.index={index <- @cols} class={"px-3 py-2 ", col_class_fun(@col_class).(index)}>
+          <tbody :if={not Enum.empty?(@data)} class="sm:rounded-lg divide-y divide-gray-200">
+            <tr
+              :for={item <- @data}
+              class={"odd:bg-white even:bg-gray-100": @striped}
+            >
+              {!--<td :for.index={index <- @cols} class={"px-3 py-2 ", col_class_fun(@col_class).(index)}>--}
+              <td :for.index={index <- @cols} class="px-3 py-2">
                 <div class="inline-block"><#slot name="cols" index={index} :args={item: item} /></div>
               </td>
             </tr>
           </tbody>
         </table>
+        <div :if={Enum.empty?(@data)} class="sm:rounded-lg divide-y divide-gray-200">
+          <slot name="empty_state" />
+        </div>
       </div>
     </div>
     """
   end
-
-  defp row_class_fun(nil), do: fn _, _ -> "" end
-  defp row_class_fun(row_class), do: row_class
-  defp col_class_fun(nil), do: fn _ -> "" end
-  defp col_class_fun(col_class), do: col_class
 
   def current_page?(page_number, idx) do
     page_number == idx - 1

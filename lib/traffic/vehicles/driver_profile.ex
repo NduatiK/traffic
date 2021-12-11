@@ -135,7 +135,6 @@ defmodule Traffic.Vehicles.DriverProfile do
         do_random(stats)
       end
 
-    IO.inspect(profile.name)
     profile
   end
 

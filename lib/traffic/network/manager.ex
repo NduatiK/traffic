@@ -41,11 +41,11 @@ defmodule Traffic.Network.Manager do
     {:ok, state}
   end
 
-  def start_road(manager, junction1, junction2)
+  def start_road(manager, junction1, junction2, arterial \\ false)
       when is_pid(junction1) and is_pid(junction2) do
     manager
     |> get_manager()
-    |> GenServer.call({:start_road, junction1, junction2})
+    |> GenServer.call({:start_road, junction1, junction2, arterial})
   end
 
   def start_junction(manager, x, y) when is_number(x) and is_number(y) do
@@ -94,7 +94,7 @@ defmodule Traffic.Network.Manager do
     config = get_config(name)
     Traffic.Network.NetworkSupervisor.stop(name)
     # Traffic.Statistics.reset(name)
-    Traffic.Network.start_simulation_and_network(name)
+    Traffic.Network.start_simulation_and_network(name, config.timing_strategy)
     # Traffic.Network.start_simulation(name, config: config)
   end
 
@@ -105,7 +105,7 @@ defmodule Traffic.Network.Manager do
   end
 
   @impl true
-  def handle_call({:start_road, junction1, junction2}, _from, %State{} = state) do
+  def handle_call({:start_road, junction1, junction2, arterial}, _from, %State{} = state) do
     {state, id} = increase_counter(state, :road)
 
     {:ok, pid} =
@@ -118,7 +118,8 @@ defmodule Traffic.Network.Manager do
         state.config
       )
 
-    new_graph = Graph.add_edge(state.graph, junction1, junction2, label: pid)
+    label = {pid, arterial}
+    new_graph = Graph.add_edge(state.graph, junction1, junction2, label: label)
 
     # existing_roads_junction_1 =
 
@@ -129,11 +130,11 @@ defmodule Traffic.Network.Manager do
     |> Graph.edges(junction1)
     |> Enum.each(fn edge ->
       if edge.v1 == junction1 do
-        RoadServer.add_linked_road(edge.label, {:left, :left}, pid)
-        RoadServer.add_linked_road(pid, {:left, :left}, edge.label)
+        RoadServer.add_linked_road(edge.label, {:left, :left}, label)
+        RoadServer.add_linked_road(label, {:left, :left}, edge.label)
       else
-        RoadServer.add_linked_road(edge.label, {:right, :left}, pid)
-        RoadServer.add_linked_road(pid, {:left, :right}, edge.label)
+        RoadServer.add_linked_road(edge.label, {:right, :left}, label)
+        RoadServer.add_linked_road(label, {:left, :right}, edge.label)
       end
     end)
 
@@ -141,11 +142,11 @@ defmodule Traffic.Network.Manager do
     |> Graph.edges(junction2)
     |> Enum.each(fn edge ->
       if edge.v2 == junction2 do
-        RoadServer.add_linked_road(edge.label, {:right, :right}, pid)
-        RoadServer.add_linked_road(pid, {:right, :right}, edge.label)
+        RoadServer.add_linked_road(edge.label, {:right, :right}, label)
+        RoadServer.add_linked_road(label, {:right, :right}, edge.label)
       else
-        RoadServer.add_linked_road(edge.label, {:left, :right}, pid)
-        RoadServer.add_linked_road(pid, {:right, :left}, edge.label)
+        RoadServer.add_linked_road(edge.label, {:left, :right}, label)
+        RoadServer.add_linked_road(label, {:right, :left}, edge.label)
       end
     end)
 

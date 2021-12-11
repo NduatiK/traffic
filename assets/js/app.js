@@ -27,6 +27,7 @@ import { LiveSocket } from "phoenix_live_view"
 import topbar from "../vendor/topbar"
 import Hooks from "./_hooks"
 import Alpine from "alpinejs";
+import LiveViewHooks from './live_view_hooks'
 
 // Add this before your liveSocket call.
 window.Alpine = Alpine;
@@ -55,6 +56,9 @@ Hooks.PushEvent = {
         this.pushEventTo(selector, msg, val)
     }
 }
+
+Hooks.LineChart = LiveViewHooks.LineChart
+Hooks.CustomLineChart = LiveViewHooks.CustomLineChart
 
 let liveSocket = new LiveSocket("/live", Socket, {
     params: { _csrf_token: csrfToken },

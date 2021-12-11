@@ -1,0 +1,11 @@
+Compiling 1 file (.ex)
+[22m08:12:23.452 [info] Running TrafficWeb.Endpoint with cowboy 2.9.0 at 127.0.0.1:4001 (http)
+[0m[22m08:12:23.457 [info] Access TrafficWeb.Endpoint at http://example.com
+[0mInteractive Elixir (1.13.0) - press Ctrl+C to exit (type h() ENTER for help)
+iex(1)> [22m08:12:24.136 request_id=Fr-ekyCo6uQPDiIAAAIj [info] GET /
+[0miex(1)> [22m08:12:24.140 [info] CONNECTED TO Phoenix.LiveView.Socket in 102µs
+  Transport: :websocket
+  Serializer: Phoenix.Socket.V2.JSONSerializer
+  Parameters: %{"_csrf_token" => "JzUZGhs0HyMFGU54OyNzeywkPgZdZyAJCDmOZXzRUA4NzQ5IYR_6-0MK", "_mounts" => "2", "_track_static" => %{"0" => "http://localhost:4001/assets/app-018feca11e6450d6417c42342143913c.css?vsn=d", "1" => "http://localhost:4001/assets/app-40f63cf258153ab147faba721dfbf5b5.js?vsn=d"}, "vsn" => "2.0.0"}
+[0miex(1)> [22m08:12:24.172 request_id=Fr-ekyCo6uQPDiIAAAIj [info] Sent 200 in 40ms
+[0miex(1)> Terminate batch job (Y/N)? 

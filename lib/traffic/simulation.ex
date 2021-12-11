@@ -26,7 +26,8 @@ defmodule Traffic.Simulation do
       {name,
        %{
          strategy: timing_strategy,
-         via: NetworkSupervisor.via(name)
+         via: NetworkSupervisor.via(name),
+         wait_time: 0
        }}
     )
   end

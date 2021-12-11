@@ -6,6 +6,7 @@ defmodule TrafficWeb.Pages.LofiMap do
   alias TrafficWeb.Components.Canvas
   alias TrafficWeb.Components.DriverDistributionModal
   alias TrafficWeb.Components.Lofi.{Road, RoadNetwork, Junction}
+  alias TrafficWeb.Components.LookAheadModal
   alias TrafficWeb.Components.Logo
   alias TrafficWeb.Components.PositionedButton
   alias TrafficWeb.Components.PositionedDiv
@@ -21,6 +22,7 @@ defmodule TrafficWeb.Pages.LofiMap do
   data(averages, :any, default: :queue.from_list(List.duplicate(0, 30)))
 
   data(show_driver_distributions, :boolean, default: true)
+  data(look_ahead, :map, default: nil)
   data(driver_distributions, :list, default: [])
 
   @impl true
@@ -30,7 +32,7 @@ defmodule TrafficWeb.Pages.LofiMap do
     case validate_network_id(socket, params) do
       :error ->
         socket
-        |> redirect(Routes.live_path(socket, HomePage))
+        |> redirect(to: Routes.live_path(socket, HomePage))
         |> put_flash(:error, "The simulation #{params["id"]} does not exist")
         |> then(&{:ok, &1})
 
@@ -74,7 +76,19 @@ defmodule TrafficWeb.Pages.LofiMap do
           right={6}
           :if={@show_driver_distributions}
           driver_distributions={@driver_distributions}
-        /> <LineGraphModal top={44} right={6} :if={@show_driver_distributions} data={TrafficWeb.Data.from_queue(@averages)} /> <PositionedDiv top={6} right={32}>
+        />
+
+
+
+        <LineGraphModal top={44} right={6} :if={@show_driver_distributions} />
+
+        <LookAheadModal
+        top={54}
+        right={6}
+        :if={@look_ahead}
+        look_ahead={@look_ahead}
+      />
+        <PositionedDiv top={6} right={32}>
           <span>
             {@average_speed}
           </span>
@@ -129,7 +143,11 @@ defmodule TrafficWeb.Pages.LofiMap do
       |> :queue.drop()
 
     socket
-    |> assign(:average_speed, round(average_speed, 2))
+    |> push_event(
+      "new-point",
+      %{label: "Average Speed", value: average_speed}
+    )
+    |> assign(:average_speed, average_speed)
     |> assign(:averages, averages)
     |> then(&{:noreply, &1})
   end
@@ -177,15 +195,16 @@ defmodule TrafficWeb.Pages.LofiMap do
   def validate_network_id(socket, params) do
     try do
       network_id = String.to_existing_atom(params["id"])
+      pid = GenServer.whereis(Traffic.Network.NetworkSupervisor.via(network_id))
 
-      {network_id, assign(socket, network_id: network_id)}
+      if is_pid(pid) do
+        {network_id, assign(socket, network_id: network_id)}
+      else
+        :error
+      end
     rescue
       _ ->
         :error
     end
-  end
-
-  def round(num, dp) do
-    round(num * :math.pow(10, dp)) / :math.pow(10, dp)
   end
 end

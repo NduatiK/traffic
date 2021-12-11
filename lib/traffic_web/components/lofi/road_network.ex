@@ -21,8 +21,9 @@ defmodule TrafficWeb.Components.Lofi.RoadNetwork do
         <Junction id={"junction_#{inspect(junction)}"} network_id={@network_id} junction={junction} />
       {/for} {#for road <- Graph.edges(@network)}
         <Road
-          id={"road_#{inspect(road.label)}"}
-          road_pid={road.label}
+          id={"road_#{inspect(elem(road.label, 0))}"}
+          road_pid={elem(road.label, 0)}
+          arterial={elem(road.label, 1)}
           from_junction={road.v1}
           to_junction={road.v2}
           lane_width={30}

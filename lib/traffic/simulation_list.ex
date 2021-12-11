@@ -8,6 +8,7 @@ defmodule Traffic.SimulationList do
 
   def init(_opts) do
     schedule_poll()
+    schedule_update_average()
 
     {:ok, []}
   end
@@ -25,7 +26,7 @@ defmodule Traffic.SimulationList do
   end
 
   def handle_cast({:add_simulation, {name, data}}, state) do
-    [{name, data} | state]
+    [{name, Map.put(data, :label, name)} | state]
     |> then(&{:noreply, &1})
   end
 
@@ -47,12 +48,26 @@ defmodule Traffic.SimulationList do
     state
     |> Enum.filter(fn {_name, info} ->
       GenServer.whereis(info.via)
-      # Process.alive?(pid)
+    end)
+    |> then(&{:noreply, &1})
+  end
+
+  def handle_info(:update_average, state) do
+    schedule_update_average()
+
+    state
+    |> Enum.map(fn {name, info} ->
+      average_wait = Traffic.Statistics.get_average_wait_time(name)
+      {name, %{info | wait_time: average_wait}}
     end)
     |> then(&{:noreply, &1})
   end
 
   def schedule_poll() do
     Process.send_after(self(), :poll_simulations, 1000)
+  end
+
+  def schedule_update_average() do
+    Process.send_after(self(), :update_average, 2000)
   end
 end

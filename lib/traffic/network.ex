@@ -2,13 +2,13 @@ defmodule Traffic.Network do
   @doc """
   Best followed up by a Network.build_network(name)
   """
-  def start_simulation(name, opts \\ []) do
-    Traffic.Simulation.start_simulation(name, Traffic.Network.Timing.NaiveStrategy)
+  def start_simulation(name, strategy) do
+    Traffic.Simulation.start_simulation(name, strategy)
   end
 
-  def start_simulation_and_network(name, opts \\ []) do
+  def start_simulation_and_network(name, strategy) do
     :timer.sleep(10)
-    start_simulation(name, opts)
+    start_simulation(name, strategy)
     :timer.sleep(10)
     build_network(name)
   end
@@ -24,17 +24,19 @@ defmodule Traffic.Network do
 
     for x <- 0..3 do
       for y <- 0..4 do
-        junction_1 =
-          junctions
-          |> Enum.at(x)
-          |> Enum.at(y)
+        if not (x in [2] and y not in [2, 3]) do
+          junction_1 =
+            junctions
+            |> Enum.at(x)
+            |> Enum.at(y)
 
-        junction_2 =
-          junctions
-          |> Enum.at(x + 1)
-          |> Enum.at(y)
+          junction_2 =
+            junctions
+            |> Enum.at(x + 1)
+            |> Enum.at(y)
 
-        {:ok, _} = start_road(name, junction_1, junction_2)
+          {:ok, _} = start_road(name, junction_1, junction_2, x == 2)
+        end
       end
     end
 
@@ -55,23 +57,8 @@ defmodule Traffic.Network do
     end
   end
 
-  def build_network(name) do
-    {:ok, junction_1} = start_junction(name, 10 * 5, 10 * 5)
-    {:ok, junction_2} = start_junction(name, 50 * 5, 10 * 5)
-    {:ok, junction_3} = start_junction(name, 70 * 5, 30 * 5)
-    {:ok, junction_4} = start_junction(name, 50 * 5, 50 * 5)
-    {:ok, junction_5} = start_junction(name, 10 * 5, 50 * 5)
-
-    {:ok, _road_0} = start_road(name, junction_1, junction_2)
-    {:ok, _road_1} = start_road(name, junction_2, junction_3)
-    {:ok, _road_2} = start_road(name, junction_3, junction_4)
-    {:ok, _road_3} = start_road(name, junction_4, junction_5)
-    {:ok, _road_4} = start_road(name, junction_5, junction_1)
-    {:ok, _road_5} = start_road(name, junction_4, junction_2)
-  end
-
-  def start_road(name, junction1, junction2) do
-    Traffic.Network.Manager.start_road(name, junction1, junction2)
+  def start_road(name, junction1, junction2, arterial \\ false) do
+    Traffic.Network.Manager.start_road(name, junction1, junction2, arterial)
   end
 
   def start_junction(name, x, y) do

@@ -16,6 +16,7 @@ defmodule TrafficWeb.Components.Lofi.Road do
   data(lights, :map)
   prop(lane_width, :integer)
   data(road, :map)
+  prop(arterial, :boolean)
 
   data(lane_color, :string, default: "#c0c0c0")
   slot(default)
@@ -73,7 +74,7 @@ defmodule TrafficWeb.Components.Lofi.Road do
         road_name={inspect(@road.name)}
         offset={1}
       />
-      <LaneDivider width={@length} lane_width={@lane_width} stroke_width={3} solid offset={4} />
+      <LaneDivider width={@length} lane_width={@lane_width} stroke_width={if @arterial, do: 5, else: 3} solid offset={4} />
       <Lane
         flip
         width={@length}

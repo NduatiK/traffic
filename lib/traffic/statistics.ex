@@ -18,28 +18,44 @@ defmodule Traffic.Statistics do
     start_up(simulation_name)
   end
 
+  @threshold 10
+
   def update_wait_time(simulation_name, vehicle_name, wait_time) do
     MemoryDB.update(table_name(simulation_name), vehicle_name, {wait_time, 0}, fn
-      {old_wait_time, count} ->
+      {old_wait_time, count} when count > @threshold ->
         {old_wait_time + wait_time, count + 1}
+
+      {_old_wait_time, count} ->
+        {0, count + 1}
     end)
   end
 
   def get_average_wait_time(simulation_name) do
-    simulation_name
-    |> table_name()
-    |> MemoryDB.get_all_values()
-    |> Enum.reduce({0, 0}, fn {sum, count}, {acc_sum, acc_count} ->
+    vehicles =
+      simulation_name
+      |> table_name()
+      |> MemoryDB.get_all_values()
+
+    # start
+
+    vehicles
+    |> Enum.reduce({0, -(Enum.count(vehicles) * @threshold)},
+     fn {sum, count},                                                                 {acc_sum, acc_count} ->
       {sum + acc_sum, count + acc_count}
     end)
     |> average()
+    |> round(2)
   end
 
-  def average({_sum, 0}) do
+  def average({_sum, count}) when count <= @threshold do
     0
   end
 
   def average({sum, count}) do
-    sum / count
+    sum / (count - @threshold)
+  end
+
+  def round(num, dp) do
+    round(num * :math.pow(10, dp)) / :math.pow(10, dp)
   end
 end

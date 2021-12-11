@@ -96,4 +96,6 @@ defmodule Traffic.Network.Timing.RandomizedSynchonizedStrategy do
       state
     end
   end
+
+  
 end

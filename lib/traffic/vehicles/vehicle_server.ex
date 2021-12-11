@@ -5,7 +5,7 @@ defmodule Traffic.Vehicles.VehicleServer do
   use TypedStruct
 
   @tick_after round(1000 / 24)
-  @look_ahead_after round(@tick_after / 4)
+  @look_ahead_after round(@tick_after * 10)
 
   typedstruct module: Vision do
     field(:junction_light, atom(), default: nil)
@@ -75,36 +75,6 @@ defmodule Traffic.Vehicles.VehicleServer do
     GenServer.cast(server, :pause)
   end
 
-  def start_moving() do
-  end
-
-  def slow_down(_vehicle) do
-  end
-
-  def avoid_collision(vehicle, comparative_speed) do
-    if comparative_speed == :lt do
-      slow_down(vehicle)
-    end
-  end
-
-  def join_junction(_junction_pid, _exit_road) do
-  end
-
-  # def change_lane() do
-  # end
-
-  # def enter_junction(server, pid, junction_length, position \\ 0) do
-  #   enter_container(server, :junction, position, junction_length)
-  # end
-
-  # def enter_road(server, pid, road_length, position \\ 0) do
-  #   enter_container(server, :road, position, road_length)
-  # end
-
-  # def enter_container(server, container_type, position, road_length) do
-  #   GenServer.call(server, {:enter_container, container_type, position, road_length})
-  # end
-
   @impl true
   def handle_cast(:pause, %State{} = state) do
     if state.paused do
@@ -161,7 +131,7 @@ defmodule Traffic.Vehicles.VehicleServer do
   def handle_info(:tick, %State{} = state) do
     Process.send_after(self(), :tick, @tick_after)
 
-    position_ = state.position.position + state.current_speed / 6
+    position_ = state.position.position + state.current_speed / 3
 
     position_ = min(state.position.length, position_)
 

@@ -11,7 +11,8 @@ import Config
 # before starting your production server.
 config :traffic, TrafficWeb.Endpoint,
   url: [host: "example.com", port: 80],
-  cache_static_manifest: "priv/static/cache_manifest.json"
+  cache_static_manifest: "priv/static/cache_manifest.json",
+  secret_key_base: "Gorim7x9bY39oWUA7Re6w8JPEHjScj3V/QkUE7jchvp2GZ0+qu+LHhs/7TjuhnYi"
 
 # Do not print debug messages in production
 config :logger, level: :info
@@ -49,3 +50,19 @@ config :logger, level: :info
 #       force_ssl: [hsts: true]
 #
 # Check `Plug.SSL` for all available options in `force_ssl`.
+
+# -----------
+config :traffic, Traffic.Repo,
+  username: "postgres",
+  password: "postgres",
+  database: "traffic_dev",
+  hostname: "localhost",
+  show_sensitive_data_on_connection_error: true,
+  pool_size: 10
+
+config :traffic, TrafficWeb.Endpoint,
+  # Binding to loopback ipv4 address prevents access from other machines.
+  # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
+  http: [ip: {127, 0, 0, 1}, port: 4001],
+  check_origin: false,
+  cache_static_manifest: "priv/static/cache_manifest.json"

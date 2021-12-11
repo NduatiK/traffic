@@ -4,17 +4,22 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "deploy": "NODE_ENV=production postcss css/app.css -o ../priv/static/assets/app.css"
+    "deploy": "postcss css/app.css -o ../priv/static/assets/app.css",
+    "deploy2": "NODE_ENV=production postcss css/app.css -o ../priv/static/assets/app.css"
   },
   "devDependencies": {
-    "autoprefixer": "^10.3.7",
-    "postcss": "^8.3.9",
+    "@tailwindcss/forms": "^0.4.0",
+    "autoprefixer": "^10.4.0",
+    "postcss": "^8.4.4",
     "postcss-cli": "^9.0.1",
     "postcss-import": "^14.0.2",
-    "tailwindcss": "^2.2.16"
+    "tailwindcss": "^3.0.0"
   },
   "dependencies": {
-    "@tailwindcss/forms": "^0.3.4",
-    "alpinejs": "^3.4.2"
+    "alpinejs": "^3.4.2",
+    "chart.js": "^3.6.2",
+    "chartjs-adapter-luxon": "^1.1.0",
+    "chartjs-plugin-streaming": "^2.0.0",
+    "luxon": "^2.1.1"
   }
 }

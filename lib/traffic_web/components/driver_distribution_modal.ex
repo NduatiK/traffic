@@ -16,7 +16,7 @@ defmodule TrafficWeb.Components.DriverDistributionModal do
       style={top: "#{@top / 4}rem", right: "#{@right / 4}rem"}
       id="driver_dist_modal"
       x-data="{ open: false }"
-      x-bind:class="{'rounded bg-transparent shadow': true, 'relative overflow-hidden w-10 h-10': !open}"
+      x-bind:class="{'border rounded bg-transparent shadow': true, 'relative overflow-hidden w-10 h-10': !open, 'z-10': open}"
     >
       <div x-bind:class="{'rounded bg-white shadow p-2 absolute': true, 'top-0 right-0': open}">
         <div class="flex flex-row justify-between text-indigo-800">
@@ -38,6 +38,12 @@ defmodule TrafficWeb.Components.DriverDistributionModal do
                 <span>{value}</span>
               </div>
             {/for}
+            <button
+              class="mt-4 bg-blue-400 bg-opacity-50 hover:bg-opacity-75 transition-colors duration-200 rounded font-semibold py-2 px-4 inline-flex"
+              :on-click="reset_profiles"
+            >
+              Reset
+            </button>
           </div>
         </div>
       </div>

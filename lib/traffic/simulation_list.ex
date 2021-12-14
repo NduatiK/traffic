@@ -1,6 +1,6 @@
-defmodule Traffic.SimulationList do
+defmodule Traffic.SimulationRegistry do
   use GenServer
-  alias Traffic.Network.NetworkSupervisor
+  alias Traffic.Network.SimulationSupervisor
 
   def start_link(init_arg) do
     GenServer.start_link(__MODULE__, init_arg, name: __MODULE__)

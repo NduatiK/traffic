@@ -2,7 +2,7 @@ defmodule Traffic.Network.RoadServer do
   use GenServer
   use TypedStruct
   alias Traffic.Network.Road
-  alias Traffic.Network.JunctionServer
+  alias Traffic.Network.JunctionServer  
   alias Traffic.Vehicles.VehicleServer
   alias Traffic.Network.Manager
   import Traffic.Network.Road, only: [invert: 1]

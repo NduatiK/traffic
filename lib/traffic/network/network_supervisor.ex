@@ -1,4 +1,4 @@
-defmodule Traffic.Network.NetworkSupervisor do
+defmodule Traffic.Network.SimulationSupervisor do
   use Supervisor
   alias Traffic.Network.Manager
   alias Traffic.Network.ChildSupervisor
@@ -28,6 +28,6 @@ defmodule Traffic.Network.NetworkSupervisor do
   def stop(name) do
     name
     |> via()
-    |> Traffic.Simulation.stop_simulation(name)
+    |> Traffic.SimulationListSupervisor.stop_simulation(name)
   end
 end

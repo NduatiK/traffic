@@ -82,15 +82,15 @@ defmodule TrafficWeb.Pages.HomePage do
         <canvas id="chart-canvas" style="max-height: 600px; height: 300px" phx-update="ignore" phx-hook="LineChart" />
       </div>
       <Table
-
-      data={{{name, process_info}, index} <- Enum.at(@processes, @page_number)}
-
-
-      on_set_page="select_page"
+        data={{{name, process_info}, index} <- Enum.at(@processes, @page_number)}
+        on_set_page="select_page"
         page_number={@page_number}
         total_pages={Enum.count(@processes)}
-
-      bordered expanded paginated id="table">
+        bordered
+        expanded
+        paginated
+        id="table"
+      >
         <Column label="">
           <div class="rounded-full w-2 h-2" style={"background: #{color_at(index)}"} />
         </Column>
@@ -196,13 +196,13 @@ defmodule TrafficWeb.Pages.HomePage do
   @impl true
   def handle_info(:update_list, socket) do
     processes =
-      Traffic.SimulationList.get_list()
-      |> Enum.with_index()
+      Traffic.SimulationRegistry.get_list()
       |> Enum.reverse()
+      |> Enum.with_index()
       |> Enum.chunk_every(@page_size)
 
     socket =
-      Traffic.SimulationList.get_list()
+      Traffic.SimulationRegistry.get_list()
       |> Enum.reverse()
       |> Enum.reduce(socket, fn {_name, process_info}, socket ->
         socket
@@ -230,13 +230,17 @@ defmodule TrafficWeb.Pages.HomePage do
             "rgba(255, 99, 132, 1)",
             "rgba(54, 162, 235, 1)",
             "rgba(255, 206, 86, 1)",
-            "rgba(75, 192, 192, 1)",
-            "rgba(153, 102, 255, 1)",
-            "rgba(255, 159, 64, 1)"
+            "rgba(75, 192, 192, 1)"
+            # "rgba(153, 102, 255, 1)",
+            # "rgba(255, 159, 64, 1)"
           ]
           |> Enum.reverse()
   def color_at(index) do
-    Enum.at(@colors, rem(index, Enum.count(@colors)))
+    if index >= Enum.count(@colors) do
+      "rgb(107, 114, 128)"
+    else
+      Enum.at(@colors, rem(index, Enum.count(@colors)))
+    end
   end
 
   def schedule_list_update(socket, delay \\ 1500) do

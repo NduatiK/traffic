@@ -92,7 +92,7 @@ defmodule Traffic.Network.Manager do
 
   def reset_network(name) when is_atom(name) do
     config = get_config(name)
-    Traffic.Network.NetworkSupervisor.stop(name)
+    Traffic.Network.SimulationSupervisor.stop(name)
     Traffic.Network.start_simulation_and_network(name, config.timing_strategy)
   end
 

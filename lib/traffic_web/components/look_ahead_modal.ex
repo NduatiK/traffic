@@ -47,8 +47,20 @@ defmodule TrafficWeb.Components.LookAheadModal do
               xmlns:xlink="http://www.w3.org/1999/xlink"
             >
               <rect width={10} height={5} x={0} y={25} fill="blue" />
-              <rect :if={@look_ahead.appx_distance_to_lead} x={(@look_ahead.appx_distance_to_lead || 0) / 40 * 150} y={25}  width={10} height={5} fill="green" />
-              <text :if={@look_ahead.appx_distance_to_lead} x={(@look_ahead.appx_distance_to_lead || 0) / 40 * 150} y="45" class="text-sm">{(@look_ahead.appx_distance_to_lead || 0)}m</text>
+              <rect
+                :if={@look_ahead.appx_distance_to_lead}
+                x={(@look_ahead.appx_distance_to_lead || 0) / 40 * 150}
+                y={25}
+                width={10}
+                height={5}
+                fill="green"
+              />
+              <text
+                :if={@look_ahead.appx_distance_to_lead}
+                x={(@look_ahead.appx_distance_to_lead || 0) / 40 * 150}
+                y="45"
+                class="text-sm"
+              >{round(@look_ahead.appx_distance_to_lead || 0, 2)}m</text>
               <circle
                 :if={@look_ahead.junction_distance}
                 r={5}
@@ -57,12 +69,16 @@ defmodule TrafficWeb.Components.LookAheadModal do
                 fill={"#{@look_ahead.junction_light}"}
                 stroke="black"
               />
-              <text :if={@look_ahead.junction_distance} x={(@look_ahead.junction_distance || 0) / 40 * 150} y="20" class="text-sm">{@look_ahead.junction_distance}m</text>
+              <text :if={@look_ahead.junction_distance} x={(@look_ahead.junction_distance || 0) / 40 * 150} y="20" class="text-sm">{round(@look_ahead.junction_distance, 2)}m</text>
             </svg>
           </div>
         </div>
       </div>
     </div>
     """
+  end
+
+  def round(num, dp) do
+    round(num * :math.pow(10, dp)) / :math.pow(10, dp)
   end
 end

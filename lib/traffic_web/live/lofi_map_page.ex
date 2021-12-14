@@ -203,10 +203,26 @@ defmodule TrafficWeb.Pages.LofiMap do
     |> then(&{:noreply, &1})
   end
 
+  @impl true
+  def handle_event("reset_profiles", _, socket) do
+    driver_distributions =
+      socket.assigns.driver_distributions
+      |> Enum.map(fn {k, _} ->
+        {k, 0.5}
+      end)
+      |> Enum.into(%{})
+
+    Manager.set_driver_config(socket.assigns.network_id, driver_distributions)
+
+    socket
+    |> assign(driver_distributions: driver_distributions)
+    |> then(&{:noreply, &1})
+  end
+
   def validate_network_id(socket, params) do
     try do
       network_id = String.to_existing_atom(params["id"])
-      pid = GenServer.whereis(Traffic.Network.NetworkSupervisor.via(network_id))
+      pid = GenServer.whereis(Traffic.Network.SimulationSupervisor.via(network_id))
 
       if is_pid(pid) do
         {network_id, assign(socket, network_id: network_id)}

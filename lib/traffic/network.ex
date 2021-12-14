@@ -3,7 +3,7 @@ defmodule Traffic.Network do
   Best followed up by a Network.build_network(name)
   """
   def start_simulation(name, strategy) do
-    Traffic.Simulation.start_simulation(name, strategy)
+    Traffic.SimulationListSupervisor.start_simulation(name, strategy)
   end
 
   def start_simulation_and_network(name, strategy) do

@@ -10,32 +10,18 @@ defmodule Traffic.Application do
   def start(_type, _args) do
     children = [
       # Start the Ecto repository
-      Traffic.Repo,
+      # Traffic.Repo,
       # Start the Telemetry supervisor
-      TrafficWeb.Telemetry,
+      # TrafficWeb.Telemetry,
       # Start the PubSub system
       {Registry, keys: :unique, name: Registry.Traffic},
       {Phoenix.PubSub, name: Traffic.PubSub},
       # Start the Endpoint (http/https)
       TrafficWeb.Endpoint,
       # Start a network server
-      {Traffic.Simulation, []},
-      {Traffic.SimulationList, []},
+      {Traffic.SimulationListSupervisor, []},
+      {Traffic.SimulationRegistry, []},
       {Traffic.Evolution, []}
-      # ,
-      # {
-      #   Desktop.Window,
-      #   [
-      #     app: @app,
-      #     id: TrafficWindow,
-      #     title: "Traffique",
-      #     size: {600, 500},
-      #     icon: "icon32x32.png",
-      #     # menubar: TodoApp.MenuBar,
-      #     # icon_menu: TodoApp.Menu,
-      #     url: &TrafficWeb.Endpoint.url/0
-      #   ]
-      # }
     ]
 
     setup()
@@ -50,32 +36,32 @@ defmodule Traffic.Application do
     Task.async(fn ->
       :timer.sleep(1000)
 
-      Traffic.Network.start_simulation_and_network(
-        :NaiveStrategy,
-        Traffic.Network.Timing.NaiveStrategy
-      )
+      # Traffic.Network.start_simulation_and_network(
+      #   :NaiveStrategy,
+      #   Traffic.Network.Timing.NaiveStrategy
+      # )
 
-      Traffic.Network.start_simulation_and_network(
-        :RandomizedNaiveStrategy,
-        Traffic.Network.Timing.RandomizedNaiveStrategy
-      )
+      # Traffic.Network.start_simulation_and_network(
+      #   :RandomizedNaiveStrategy,
+      #   Traffic.Network.Timing.RandomizedNaiveStrategy
+      # )
 
-      Traffic.Network.start_simulation_and_network(
-        :SynchonizedStrategy,
-        Traffic.Network.Timing.SynchonizedStrategy
-      )
+      # Traffic.Network.start_simulation_and_network(
+      #   :SynchonizedStrategy,
+      #   Traffic.Network.Timing.SynchonizedStrategy
+      # )
 
-      Traffic.Network.start_simulation_and_network(
-        :RandomizedSynchonizedStrategy,
-        Traffic.Network.Timing.RandomizedSynchonizedStrategy
-      )
+      # Traffic.Network.start_simulation_and_network(
+      #   :RandomizedSynchonizedStrategy,
+      #   Traffic.Network.Timing.RandomizedSynchonizedStrategy
+      # )
 
-      for i <- 1..15 do
-        Traffic.Network.start_simulation_and_network(
-          :"Genetic#{i}",
-          Traffic.Network.Timing.GeneticEvolutionStrategy
-        )
-      end
+      # for i <- 1..16 do
+      #   Traffic.Network.start_simulation_and_network(
+      #     :"Genetic#{i}",
+      #     Traffic.Network.Timing.GeneticEvolutionStrategy
+      #   )
+      # end
     end)
   end
 

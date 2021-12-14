@@ -1,7 +1,7 @@
-defmodule Traffic.Simulation do
-  alias Traffic.SimulationList
+defmodule Traffic.SimulationListSupervisor do
+  alias Traffic.SimulationRegistry
   use DynamicSupervisor
-  alias Traffic.Network.NetworkSupervisor
+  alias Traffic.Network.SimulationSupervisor
 
   def start_link(init_arg) do
     DynamicSupervisor.start_link(__MODULE__, init_arg, name: __MODULE__)
@@ -9,7 +9,7 @@ defmodule Traffic.Simulation do
 
   def start_simulation(name, timing_strategy) do
     spec =
-      {NetworkSupervisor,
+      {SimulationSupervisor,
        Keyword.put(
          [
            config: %Traffic.Network.Config{
@@ -22,11 +22,11 @@ defmodule Traffic.Simulation do
 
     {:ok, _child} = DynamicSupervisor.start_child(__MODULE__, spec)
 
-    SimulationList.add_simulation(
+    SimulationRegistry.add_simulation(
       {name,
        %{
          strategy: timing_strategy,
-         via: NetworkSupervisor.via(name),
+         via: SimulationSupervisor.via(name),
          wait_time: 0
        }}
     )
@@ -34,7 +34,7 @@ defmodule Traffic.Simulation do
 
   def stop_simulation(pid, name) do
     DynamicSupervisor.terminate_child(__MODULE__, pid)
-    SimulationList.remove_simulation(name)
+    SimulationRegistry.remove_simulation(name)
   end
 
   @impl true

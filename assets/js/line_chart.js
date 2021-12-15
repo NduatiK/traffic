@@ -1,17 +1,11 @@
 // Adapted from: https://dev.to/mnishiguchi/real-time-charting-with-elixir-phoenixliveview-chartjs-b4c
 
-
-// https://www.chartjs.org/docs/3.6.1/getting-started/integration.html#bundlers-webpack-rollup-etc
-
-
 import Chart from 'chart.js/auto'
 import 'chartjs-adapter-luxon'
 import ChartStreaming from 'chartjs-plugin-streaming'
 Chart.register(ChartStreaming)
 
 Chart.defaults.font.family = "Inter, sans-serif,sanss";
-
-// A wrapper of Chart.js that configures the realtime line chart.
 export default class {
   constructor(ctx, showLabels = true) {
     showLabels;

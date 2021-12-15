@@ -12,8 +12,6 @@ defmodule Traffic.MemoryDB do
   def create_table(table_name) do
     :ets.new(table_name, [:set, :named_table, :public])
 
-    # :ets.insert(table_name, {"count", 0, "metadata"})
-
     try do
       :ets.new(__MODULE__, [:set, :named_table, :public])
     rescue

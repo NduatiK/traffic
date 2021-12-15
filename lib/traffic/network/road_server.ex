@@ -2,12 +2,12 @@ defmodule Traffic.Network.RoadServer do
   use GenServer
   use TypedStruct
   alias Traffic.Network.Road
-  alias Traffic.Network.JunctionServer  
+  alias Traffic.Network.JunctionServer
   alias Traffic.Vehicles.VehicleServer
   alias Traffic.Network.Manager
   import Traffic.Network.Road, only: [invert: 1]
 
-  typedstruct module: Junction, enforce: true do
+  typedstruct module: JunctionInfo, enforce: true do
     field(:junction, pid())
     field(:color, atom())
     field(:linked_roads, list())
@@ -16,7 +16,7 @@ defmodule Traffic.Network.RoadServer do
   typedstruct module: State, enforce: true do
     field(:id, integer())
     field(:road, Road.t())
-    field(:junction_and_colors, %{atom() => Junction.t()})
+    field(:junction_and_colors, %{atom() => JunctionInfo.t()})
   end
 
   # Client
@@ -46,8 +46,8 @@ defmodule Traffic.Network.RoadServer do
      %State{
        id: Keyword.get(opts, :id),
        junction_and_colors: %{
-         left: %Junction{junction: from, color: :red, linked_roads: []},
-         right: %Junction{junction: to, color: :red, linked_roads: []}
+         left: %JunctionInfo{junction: from, color: :red, linked_roads: []},
+         right: %JunctionInfo{junction: to, color: :red, linked_roads: []}
        },
        road: road
      }}

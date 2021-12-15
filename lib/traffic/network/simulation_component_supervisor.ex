@@ -1,4 +1,4 @@
-defmodule Traffic.Network.ChildSupervisor do
+defmodule Traffic.Network.SimulationComponentSupervisor do
   use DynamicSupervisor, restart: :temporary
   alias Traffic.Network.RoadServer
   alias Traffic.Vehicles.VehicleServer

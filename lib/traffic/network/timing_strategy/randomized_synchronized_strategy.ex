@@ -12,6 +12,7 @@ defmodule Traffic.Network.Timing.RandomizedSynchonizedStrategy do
     field(:time_in_yellow, integer())
     field(:time_in_green, integer())
     field(:time_in_red, integer())
+    field(:start_after, integer())
   end
 
   @impl Strategy

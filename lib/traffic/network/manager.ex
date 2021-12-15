@@ -3,7 +3,7 @@ defmodule Traffic.Network.Manager do
 
   use TypedStruct
 
-  alias Traffic.Network.ChildSupervisor, as: ChildSup
+  alias Traffic.Network.SimulationComponentSupervisor, as: ChildSup
   alias Traffic.Network.RoadServer
   alias Traffic.Network.JunctionServer
 
@@ -15,7 +15,7 @@ defmodule Traffic.Network.Manager do
     field(:paused, boolean(), default: false)
   end
 
-  alias Traffic.Network.ChildSupervisor
+  alias Traffic.Network.SimulationComponentSupervisor
 
   def start_link(opts) do
     GenServer.start_link(
@@ -35,8 +35,6 @@ defmodule Traffic.Network.Manager do
       graph: Graph.new(type: :directed),
       config: state.config
     }
-
-    Process.send_after(self(), :tick, 5000)
 
     {:ok, state}
   end
@@ -107,7 +105,7 @@ defmodule Traffic.Network.Manager do
     {state, id} = increase_counter(state, :road)
 
     {:ok, pid} =
-      ChildSupervisor.start_road(
+      SimulationComponentSupervisor.start_road(
         ChildSup.via(state.name),
         id,
         state.name,
@@ -156,7 +154,14 @@ defmodule Traffic.Network.Manager do
     {state, id} = increase_counter(state, :junction)
 
     {:ok, pid} =
-      ChildSupervisor.start_junction(ChildSup.via(state.name), id, state.name, x, y, state.config)
+      SimulationComponentSupervisor.start_junction(
+        ChildSup.via(state.name),
+        id,
+        state.name,
+        x,
+        y,
+        state.config
+      )
 
     new_graph = Graph.add_vertex(state.graph, pid)
 
@@ -168,7 +173,12 @@ defmodule Traffic.Network.Manager do
     {state, id} = increase_counter(state, :vehicle)
 
     {:ok, pid} =
-      ChildSupervisor.start_vehicle(ChildSup.via(state.name), id, state.name, state.config)
+      SimulationComponentSupervisor.start_vehicle(
+        ChildSup.via(state.name),
+        id,
+        state.name,
+        state.config
+      )
 
     {:reply, {:ok, pid}, state}
   end
@@ -214,16 +224,8 @@ defmodule Traffic.Network.Manager do
   end
 
   @impl true
-  def handle_info(:tick, %State{} = state) do
-    # Process.send_after(self(), :tick, 100)
-    # IO.inspect(:tick)
-    {:noreply, state}
-  end
-
-  @impl true
   def handle_info(_, %State{} = state) do
-    # Process.send_after(self(), :tick, 100)
-    # IO.inspect(:tick)
+    # Here to accept the Task async callbacks
     {:noreply, state}
   end
 

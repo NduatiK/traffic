@@ -381,8 +381,6 @@ defimpl Inspect, for: Traffic.Network.Road do
     |> String.pad_trailing(round(length * @scale) + 1)
   end
 
-  @spec do_inspect_vehicles(:down | :up, list({Vehicle.t(), float()})) ::
-          nonempty_binary
   def do_inspect_vehicles(_direction, vehicles) do
     vehicles
     |> Enum.reduce({"\n", -@vehicle_width}, fn {_vehicle, location}, {acc_str, prev_position} ->

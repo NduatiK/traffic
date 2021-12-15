@@ -36,32 +36,32 @@ defmodule Traffic.Application do
     Task.async(fn ->
       :timer.sleep(1000)
 
-      # Traffic.Network.start_simulation_and_network(
-      #   :NaiveStrategy,
-      #   Traffic.Network.Timing.NaiveStrategy
-      # )
+      Traffic.Network.start_simulation_and_network(
+        :NaiveStrategy,
+        Traffic.Network.Timing.NaiveStrategy
+      )
 
-      # Traffic.Network.start_simulation_and_network(
-      #   :RandomizedNaiveStrategy,
-      #   Traffic.Network.Timing.RandomizedNaiveStrategy
-      # )
+      Traffic.Network.start_simulation_and_network(
+        :RandomizedNaiveStrategy,
+        Traffic.Network.Timing.RandomizedNaiveStrategy
+      )
 
-      # Traffic.Network.start_simulation_and_network(
-      #   :SynchonizedStrategy,
-      #   Traffic.Network.Timing.SynchonizedStrategy
-      # )
+      Traffic.Network.start_simulation_and_network(
+        :SynchonizedStrategy,
+        Traffic.Network.Timing.SynchonizedStrategy
+      )
 
-      # Traffic.Network.start_simulation_and_network(
-      #   :RandomizedSynchonizedStrategy,
-      #   Traffic.Network.Timing.RandomizedSynchonizedStrategy
-      # )
+      Traffic.Network.start_simulation_and_network(
+        :RandomizedSynchonizedStrategy,
+        Traffic.Network.Timing.RandomizedSynchonizedStrategy
+      )
 
-      # for i <- 1..16 do
-      #   Traffic.Network.start_simulation_and_network(
-      #     :"Genetic#{i}",
-      #     Traffic.Network.Timing.GeneticEvolutionStrategy
-      #   )
-      # end
+      for i <- 1..16 do
+        Traffic.Network.start_simulation_and_network(
+          :"Genetic#{i}",
+          Traffic.Network.Timing.GeneticEvolutionStrategy
+        )
+      end
     end)
   end
 

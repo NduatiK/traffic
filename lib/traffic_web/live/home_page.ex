@@ -82,7 +82,7 @@ defmodule TrafficWeb.Pages.HomePage do
         <canvas id="chart-canvas" style="max-height: 600px; height: 300px" phx-update="ignore" phx-hook="LineChart" />
       </div>
       <Table
-        data={{{name, process_info}, index} <- Enum.at(@processes, @page_number)}
+        data={{{name, process_info}, index} <- Enum.at(@processes, @page_number)||[]}
         on_set_page="select_page"
         page_number={@page_number}
         total_pages={Enum.count(@processes)}

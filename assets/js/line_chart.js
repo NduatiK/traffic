@@ -52,7 +52,7 @@ export default class {
           },
           y: {
             suggestedMin: 0,
-            suggestedMax: 24
+            suggestedMax: 10
           }
         }
       }

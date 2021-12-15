@@ -35,7 +35,6 @@ defmodule Traffic.Vehicles.VehicleServer do
     field(:visual_knowledge, Vision.t(), default: nil)
     field(:position, Position.t(), default: nil)
     field(:current_speed, integer(), default: 0)
-    field(:current_acceleration, integer(), default: 0)
     field(:driver_profile, DriverProfile.t())
     field(:waiting_time, integer(), default: 0)
 

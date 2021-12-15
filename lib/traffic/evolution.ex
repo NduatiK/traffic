@@ -3,7 +3,7 @@ defmodule Traffic.Evolution do
 
   use TypedStruct
   alias Traffic.Network.JunctionServer
-  alias Traffic.Network.Timing.GeneticEvolutionStrategy.GE
+  alias Traffic.GeneticAlgorithm, as: GA
 
   typedstruct module: State do
     field :simulations, list(), default: []
@@ -11,7 +11,7 @@ defmodule Traffic.Evolution do
 
   @evolve_delay 10_000
 
-  def start_link(opts) do
+  def start_link(_opts) do
     GenServer.start_link(
       __MODULE__,
       %{},
@@ -45,8 +45,6 @@ defmodule Traffic.Evolution do
   def handle_info(:evolve, state) do
     Process.send_after(self(), :evolve, @evolve_delay)
 
-    IO.inspect(:evolve)
-
     state.simulations
     |> Enum.map(fn {name, sims} ->
       1..map_size(sims)
@@ -63,7 +61,7 @@ defmodule Traffic.Evolution do
       |> Enum.map(&Task.await/1)
       |> then(&{&1, Traffic.Statistics.get_average_wait_time(name)})
     end)
-    |> GE.evolve([])
+    |> GA.evolve()
     |> Enum.map(fn {config, pid} ->
       JunctionServer.set_timing_config(pid, config |> Enum.into(%{}))
     end)

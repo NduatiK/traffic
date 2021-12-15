@@ -1,7 +1,7 @@
 defmodule Traffic.Network.SimulationSupervisor do
   use Supervisor
   alias Traffic.Network.Manager
-  alias Traffic.Network.ChildSupervisor
+  alias Traffic.Network.SimulationComponentSupervisor
 
   def start_link(init_arg) do
     Supervisor.start_link(__MODULE__, init_arg,
@@ -13,7 +13,7 @@ defmodule Traffic.Network.SimulationSupervisor do
   def init(init_arg) do
     children = [
       {Manager, init_arg},
-      {ChildSupervisor, init_arg}
+      {SimulationComponentSupervisor, init_arg}
     ]
 
     Traffic.Statistics.start_up(Keyword.get(init_arg, :name))

@@ -1,7 +1,6 @@
 defmodule TrafficWeb.Components.Lofi.Junction do
   use Surface.LiveComponent
 
-  alias TrafficWeb.Components.Lofi.{Vehicle, Lane, LaneDivider}
   alias Traffic.Network.JunctionServer
 
   prop(class, :string, default: "items-center")
